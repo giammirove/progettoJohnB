@@ -2,6 +2,7 @@
 #define MAP_H_INCLUDED
 
 #include <string.h>
+#include "oggetto.h"
 
 /*
     FUZIONAMENTO
@@ -31,7 +32,8 @@
 struct riga_t
 {
     int y;
-    char c[2];
+    char c[30];
+    int id;
     riga_t *next;
 };
 
@@ -44,26 +46,47 @@ struct colonna_t
     colonna_t *next;
 };
 
-typedef struct colonna_t *mappa;
+typedef struct colonna_t *mappa_t;
 
 class Map
 {
 public:
     Map(int width, int height);
+    //~Map();
 
     void initMap();
-    mappa getMappa();
+    mappa_t getMappa();
+    int getWidth();
+    int getHeight();
+    int getView();
+    int getOffset();
     void setPunto(const char c[], int x, int y);
+    void setPunto(const char c[], int x, int y, int id);
     char *getPunto(int x, int y);
+    int controllaCollisione(int x, int y);
+    int controllaCollisione(figura fig);
+    int controllaCollisione(figura fig, int inc_x, int inc_y);
+    bool dentroMargine(int x, int y);
+
+    void spostaVistaDestra();
+    void spostaVistaSinistra();
+
+    void aggiungiOggetto(Oggetto obj);
+    void rimuoviOggetto(Oggetto obj);
 
 private:
+    int _view; // indica la dimensione della vista
+    int _offset; // indica di quanto la vista si è spostata
+    int _init_width;
     int _width;
-    int _height;
-    mappa map;
+    int _init_height;
+    mappa_t map;
 
     void aggiungiRiga(riga *r, int y);
 
-    void aggiungiColonna(mappa *map, int x);
+    void creaColonna(int x);
+
+    void aggiungiColonna(int x);
 };
 
 #endif
