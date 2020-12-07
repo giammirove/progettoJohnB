@@ -67,9 +67,13 @@ public:
     int controllaCollisione(figura fig);
     int controllaCollisione(figura fig, int inc_x, int inc_y);
     bool dentroMargine(int x, int y);
+    bool dentroMargine(figura fig);
+    bool dentroMargine(figura fig, int inc_x, int inc_y);
 
     void spostaVistaDestra();
+    bool possoSpostareVistaDestra(figura fig, int view);
     void spostaVistaSinistra();
+    bool possoSpostareVistaSinistra(figura fig, int view);
 
     void aggiungiOggetto(Oggetto obj);
     void rimuoviOggetto(Oggetto obj);

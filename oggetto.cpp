@@ -1,16 +1,19 @@
 #include <string.h>
 #include <locale.h>
+#include <ncurses.h>
 #include "oggetto.h"
+#include "convertiAsciiArt.h"
+#include "utility.h"
 
 int Oggetto::_id = 0;
 
-Oggetto::Oggetto(int x, int y, TipoDiOggetto tipo)
+Oggetto::Oggetto(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 {
     _x = x;
     _y = y;
     _solido = false;
 
-    impostaFigura(tipo);
+    impostaFigura(tipo, asciiArt);
     _myId = _id++;
 }
 
@@ -31,28 +34,7 @@ TipoDiOggetto Oggetto::getTipoDiOggetto() {
     return _tipo;
 }
 
-void aggiungiPuntoAFigura(figura *_figura, int x, int y, const char c[])
-{
-    if (_figura == NULL)
-    {
-        *_figura = new figura_t;
-        (*_figura)->x = x;
-        (*_figura)->y = y;
-        strcpy((*_figura)->c, c);
-        (*_figura)->next = NULL;
-    }
-    else
-    {
-        figura t = new figura_t;
-        t->x = x;
-        t->y = y;
-        strcpy(t->c, c);
-        t->next = (*_figura);
-        (*_figura) = t;
-    }
-}
-
-void Oggetto::impostaFigura(TipoDiOggetto tipo)
+void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 {
     _figura = new figura_t;
     _tipo = tipo;
@@ -66,8 +48,8 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo)
         _solido = true;
         break;
     case OS_CESPUGLIO:
-        aggiungiPuntoAFigura(&_figura, _x, _y, "\U0001F33F");
-        aggiungiPuntoAFigura(&_figura, _x+1, _y, " ");
+        aggiungiPuntoAFigura(&_figura, _x, _y, "o");
+        //aggiungiPuntoAFigura(&_figura, _x+1, _y, " ");
         _clock = 100000;
         _solido = true;
         break;
@@ -78,12 +60,23 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo)
         _solido = true;
         break;
     case OS_PIATTAFORMA:
-        aggiungiPuntoAFigura(&_figura, _x, _y, "\u25FC");
-        aggiungiPuntoAFigura(&_figura, _x+1, _y, "\u25FC");
-        aggiungiPuntoAFigura(&_figura, _x+2, _y, "\u25FC");
+        aggiungiPuntoAFigura(&_figura, _x, _y, "=");
+        aggiungiPuntoAFigura(&_figura, _x+1, _y, "=");
+        aggiungiPuntoAFigura(&_figura, _x+2, _y, "=");
         _clock = 100000;
         _solido = true;
         break;
+    case OS_WINDMILL:
+        if(_figura != NULL) delete _figura;
+        _figura = NULL;
+        figura t = asciiArt->getFigura("WINDMILL");
+        while (t != NULL) {
+            aggiungiPuntoAFigura(&_figura, t->x + _x, t->y+_y, t->c);
+            t = t->next;
+        }
+        _clock = 100000;
+        _solido = true;
+    break;
     }
 }
 

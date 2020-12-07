@@ -1,6 +1,12 @@
+#include <fstream>
+#include <iostream>
 #include <ncurses.h>
+#include <unistd.h>
 #include "map.h"
 #include "oggetto.h"
+
+using namespace std;
+
 
 // PUBLIC
 
@@ -207,7 +213,8 @@ int Map::controllaCollisione(int x, int y)
     }
 }
 
-int Map::controllaCollisione(figura fig) {
+int Map::controllaCollisione(figura fig)
+{
     return controllaCollisione(fig, 0, 0);
 }
 
@@ -215,12 +222,16 @@ int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
 {
     bool found = false;
     int res = -1;
-    while(fig != NULL && found == false) {
+    while (fig != NULL && found == false)
+    {
         int col = controllaCollisione(fig->x + inc_x, fig->y + inc_y);
-        if(col != -1) {
+        if (col != -1)
+        {
             found = true;
             res = col;
-        }else {
+        }
+        else
+        {
             fig = fig->next;
         }
     }
@@ -257,11 +268,21 @@ void Map::spostaVistaDestra()
     _width++;
 }
 
+bool Map::possoSpostareVistaDestra(figura fig, int view) {
+    int id_coll = controllaCollisione(fig, 1, 0);
+    return (id_coll == -1 && !dentroMargine(fig, view, 0));
+}
+
 void Map::spostaVistaSinistra()
 {
     this->_offset--;
     if (this->_offset < 0)
         this->_offset = 0;
+}
+
+bool Map::possoSpostareVistaSinistra(figura fig, int view) {
+    int id_coll = controllaCollisione(fig, -1, 0);
+    return (id_coll == -1 && !dentroMargine(fig, -view, 0));
 }
 
 // PRIVATE
@@ -300,12 +321,31 @@ void Map::aggiungiColonna(int x)
 
 bool Map::dentroMargine(int x, int y)
 {
-    bool fuori = true;
+    bool dentro = true;
 
     if (x < 0 || x >= _view)
-        fuori = false;
+        dentro = false;
     if (y < 0 || y >= _init_height)
-        fuori = false;
+        dentro = false;
 
-    return fuori;
+    return dentro;
+}
+
+bool Map::dentroMargine(figura fig)
+{
+    return dentroMargine(fig, 0, 0);
+}
+
+bool Map::dentroMargine(figura fig, int inc_x, int inc_y)
+{
+    bool dentro = true;
+
+    while (fig != NULL && dentro == true)
+    {
+        dentro = dentroMargine(fig->x + inc_x, fig->y + inc_y);
+        if (dentro == true)
+            fig = fig->next;
+    }
+
+    return dentro;
 }

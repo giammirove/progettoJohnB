@@ -2,24 +2,16 @@
 #define OGGETTO_H_INCLUDED
 
 #include <string.h>
-
-struct figura_t
-{
-    int x;
-    int y;
-    char c[30];
-    figura_t *next;
-};
-typedef struct figura_t *figura;
-
-void aggiungiPuntoAFigura(figura *fig, int x, int y, const char c[]);
+#include "convertiAsciiArt.h"
+#include "utility.h"
 
 enum TipoDiOggetto
 {
     OS_ALBERO,
     OS_CESPUGLIO,
     OS_KIRBY,
-    OS_PIATTAFORMA
+    OS_PIATTAFORMA,
+    OS_WINDMILL
 };
 
 class Oggetto
@@ -28,7 +20,7 @@ class Oggetto
 public:
     static int _id;
 
-    Oggetto(int x, int y, TipoDiOggetto tipo);
+    Oggetto(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
     int getId();
     int getClock();
     bool getSolido();
@@ -43,7 +35,7 @@ private:
     figura _figura;
     TipoDiOggetto _tipo;
 
-    void impostaFigura(TipoDiOggetto tipo);
+    void impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
 };
 
 #endif
