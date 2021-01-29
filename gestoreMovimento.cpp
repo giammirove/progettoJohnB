@@ -30,6 +30,11 @@ namespace GestoreMovimento
             if ((map->dentroMargine(player->getFigura(), 0, val)))
             {
                 bool solido = (id_coll != -1) ? listaObj->getDaId(id_coll).getSolido() : solido = false;
+                // se scendo me ne frego se è solido o no
+                if (val == 1) {
+                    solido = true;
+                    id_coll = map->controllaCollisionePiattaforme(player->getFigura(), 0, val);
+                }
                 if (id_coll == -1 || (id_coll != -1 && solido == false))
                 {
                     return true;

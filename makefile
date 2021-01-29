@@ -1,7 +1,7 @@
-test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o
-	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o -lncursesw
+test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o
+	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o -lncursesw
 
-main.o : main.cpp map.h player.h oggetto.h gestoreMovimento.h
+main.o : main.cpp map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h
 	g++ -c main.cpp -lncursesw
 
 convertiAsciiArt : convertiAsciiArt.cpp convertiAsciiArt.h utility.h
@@ -24,6 +24,9 @@ utility.o : utility.cpp utility.h
 
 gestoreMovimento.o : gestoreMovimento.cpp gestoreMovimento.h player.h listaOggetto.h map.h utility.h
 	g++ -c gestoreMovimento.cpp -lncursesw
+
+gestoreMondo.o : gestoreMondo.cpp gestoreMondo.h oggetto.h convertiAsciiArt.h
+	g++ -c gestoreMondo.cpp -lncursesw
 
 clean :
 	rm *.o test

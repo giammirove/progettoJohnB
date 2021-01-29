@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 // PUBLIC
 
 Map::Map(int width, int height)
@@ -239,6 +238,54 @@ int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
     return res;
 }
 
+int Map::controllaCollisionePiattaforme(figura fig)
+{
+    return controllaCollisionePiattaforme(fig, 0, 0);
+}
+
+int Map::controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y)
+{
+    if (fig == NULL)
+    {
+        return -1;
+    }
+    figura _tmp = fig;
+    int max = _tmp->y;
+    int res = -1;
+    bool found = false;
+    while (_tmp != NULL)
+    {
+        if (_tmp->y > max)
+        {
+            max = _tmp->y;
+        }
+        _tmp = _tmp->next;
+    }
+
+    while (fig != NULL && found == false)
+    {
+        if (fig->y == max)
+        {
+            int col = controllaCollisione(fig->x + inc_x, fig->y + inc_y);
+            if (col != -1)
+            {
+                found = true;
+                res = col;
+            }
+            else
+            {
+                fig = fig->next;
+            }
+        }
+        else
+        {
+            fig = fig->next;
+        }
+    }
+
+    return res;
+}
+
 void Map::aggiungiOggetto(Oggetto obj)
 {
     figura fig = obj.ottieniFigura();
@@ -264,13 +311,20 @@ void Map::rimuoviOggetto(Oggetto obj)
 void Map::spostaVistaDestra()
 {
     this->_offset++;
-    aggiungiColonna(_width);
-    _width++;
+    // aggiungo 5 colonne ovvero _width di gestore mondo
+    for (int i = 0; i < 10; i++)
+    {
+        aggiungiColonna(_width);
+        _width++;
+    }
 }
 
-bool Map::possoSpostareVistaDestra(figura fig, int view) {
+bool Map::possoSpostareVistaDestra(ListaOggetto *listaObj, figura fig, int view)
+{
     int id_coll = controllaCollisione(fig, 1, 0);
-    return (id_coll == -1 && !dentroMargine(fig, view, 0));
+    bool solid = true;
+    if(id_coll != -1) solid = listaObj->getDaId(id_coll).getSolido();
+    return ((id_coll == -1 || solid == false) && !dentroMargine(fig, view, 0));
 }
 
 void Map::spostaVistaSinistra()
@@ -280,9 +334,12 @@ void Map::spostaVistaSinistra()
         this->_offset = 0;
 }
 
-bool Map::possoSpostareVistaSinistra(figura fig, int view) {
+bool Map::possoSpostareVistaSinistra(ListaOggetto *listaObj, figura fig, int view)
+{
     int id_coll = controllaCollisione(fig, -1, 0);
-    return (id_coll == -1 && !dentroMargine(fig, -view, 0));
+    bool solid = true;
+    if(id_coll != -1) solid = listaObj->getDaId(id_coll).getSolido();
+    return ((id_coll == -1 || solid == false) && !dentroMargine(fig, -view, 0));
 }
 
 // PRIVATE

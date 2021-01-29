@@ -2,6 +2,7 @@
 #define MAP_H_INCLUDED
 
 #include <string.h>
+#include "listaOggetto.h"
 #include "oggetto.h"
 
 /*
@@ -66,14 +67,16 @@ public:
     int controllaCollisione(int x, int y);
     int controllaCollisione(figura fig);
     int controllaCollisione(figura fig, int inc_x, int inc_y);
+    int controllaCollisionePiattaforme(figura fig);
+    int controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y);
     bool dentroMargine(int x, int y);
     bool dentroMargine(figura fig);
     bool dentroMargine(figura fig, int inc_x, int inc_y);
 
     void spostaVistaDestra();
-    bool possoSpostareVistaDestra(figura fig, int view);
+    bool possoSpostareVistaDestra(ListaOggetto *listaObj, figura fig, int view);
     void spostaVistaSinistra();
-    bool possoSpostareVistaSinistra(figura fig, int view);
+    bool possoSpostareVistaSinistra(ListaOggetto *listaObj, figura fig, int view);
 
     void aggiungiOggetto(Oggetto obj);
     void rimuoviOggetto(Oggetto obj);

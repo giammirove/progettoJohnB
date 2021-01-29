@@ -7,10 +7,11 @@
 
 enum TipoDiOggetto
 {
+    OS_PIATTAFORMA,
+    OS_PIATTAFORMA2,
     OS_ALBERO,
     OS_CESPUGLIO,
     OS_KIRBY,
-    OS_PIATTAFORMA,
     OS_WINDMILL
 };
 
@@ -24,11 +25,14 @@ public:
     int getId();
     int getClock();
     bool getSolido();
+    int getWidth();
+    int getHeight();
     figura ottieniFigura();
     TipoDiOggetto getTipoDiOggetto();
 
 private:
     int _x, _y;
+    int _width, _height;
     int _myId;
     int _clock;
     bool _solido;
@@ -36,6 +40,8 @@ private:
     TipoDiOggetto _tipo;
 
     void impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
+    void caricaFigura(char *nome, ConvertiAsciiArt *asciiArt);
+    void calcWidthAndHeight();
 };
 
 #endif

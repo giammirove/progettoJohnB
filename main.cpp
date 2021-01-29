@@ -2,7 +2,7 @@
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
+#include "time.h"
 #include <fstream>
 #include <iostream>
 #include "map.h"
@@ -11,6 +11,7 @@
 #include "listaOggetto.h"
 #include "convertiAsciiArt.h"
 #include "gestoreMovimento.h"
+#include "gestoreMondo.h"
 
 using namespace std;
 
@@ -55,7 +56,7 @@ void disegnaPlayer(WINDOW *win, Player player)
     }
 }
 
-void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *listaObj, ConvertiAsciiArt *asciiArt)
+void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *listaObj, ConvertiAsciiArt *asciiArt, GestoreMondo *gestoreMondo)
 {
 
     if (c == KEY_UP)
@@ -68,14 +69,19 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
+                player->setFigura(asciiArt->getFigura("PG_DX"));
             }
             else if (*prev == KEY_LEFT)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaSinistra();
+                player->setFigura(asciiArt->getFigura("PG_SX"));
             }
             else
+            {
+                player->setFigura(asciiArt->getFigura("PG"));
                 *prev = c;
+            }
         }
         /*
         if (map->dentroMargine(player->getFigura(), 0, -1))
@@ -90,23 +96,23 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
         }
         */
     }
-    if (c == KEY_DOWN)
-    {
-        if (map->dentroMargine(player->getFigura(), 0, 1))
-        {
-            int id_coll = map->controllaCollisione(player->getFigura(), 0, +1);
-            bool solido = (id_coll != -1) ? listaObj->getDaId(id_coll).getSolido() : solido = false;
-            if (id_coll == -1 || (id_coll != -1 && solido == false))
-                player->vaiInBasso();
-        }
-    }
     if (c == KEY_LEFT)
     {
 
         int possoSinistra = GestoreMovimento::possoSinistra(map, player, listaObj);
-        if (map->possoSpostareVistaSinistra(player->getFigura(), player->getView()))
+        if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
         {
             map->spostaVistaSinistra();
+            if (*prev == KEY_UP)
+            {
+                player->resettaSaltoDestraSinistra();
+                player->saltaSinistra();
+            }
+            if (map->getOffset() == 0 && possoSinistra)
+            {
+                player->vaiASinistra();
+            }
+            player->setFigura(asciiArt->getFigura("PG_SX"));
             *prev = c;
         }
         else if (possoSinistra)
@@ -115,21 +121,30 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaSinistra();
-                *prev = c;
             }
             else
             {
                 player->vaiASinistra();
-                *prev = c;
             }
+            player->setFigura(asciiArt->getFigura("PG_SX"));
+            *prev = c;
         }
     }
     if (c == KEY_RIGHT)
     {
         int possoDestra = GestoreMovimento::possoDestra(map, player, listaObj);
-        if (map->possoSpostareVistaDestra(player->getFigura(), player->getView()))
+        if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
         {
             map->spostaVistaDestra();
+            Oggetto *tmp = gestoreMondo->generaOggetto();
+            aggiungiOggetto(map, listaObj, tmp);
+
+            if (*prev == KEY_UP)
+            {
+                player->resettaSaltoDestraSinistra();
+                player->saltaDestra();
+            }
+            player->setFigura(asciiArt->getFigura("PG_DX"));
             *prev = c;
         }
         else if (possoDestra)
@@ -138,13 +153,13 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
-                *prev = c;
             }
             else
             {
                 player->vaiADestra();
-                *prev = c;
             }
+            player->setFigura(asciiArt->getFigura("PG_DX"));
+            *prev = c;
         }
     }
     if (c == 't')
@@ -157,14 +172,18 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
     }
     if (c == ' ')
     {
-        int id = map->controllaCollisione(player->getFigura(), 1, 0);
+        int id = map->controllaCollisionePiattaforme(player->getFigura(), 1, 0);
         if (id != -1)
         {
             map->rimuoviOggetto(listaObj->getDaId(id));
             listaObj->rimuoviDaId(id);
         }
     }
-
+    if (c == 'k')
+    {
+        Oggetto *tmp = gestoreMondo->generaOggetto();
+        aggiungiOggetto(map, listaObj, tmp);
+    }
     if (c == 'p')
     {
         player->setFigura(asciiArt->getFigura("RINO"));
@@ -179,16 +198,18 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
     }
 
     // CONTROLLA COLLISIONE
-    if (map->controllaCollisione(player->getFigura()) != -1)
+    /*
+    if (map->controllaCollisionePiattaforme(player->getFigura()) != -1)
     {
-        int id = map->controllaCollisione(player->getFigura());
+        int id = map->controllaCollisionePiattaforme(player->getFigura());
         int tipo = listaObj->getDaId(id).getTipoDiOggetto();
-        printw("\tCOLLISIONE : %d (x:%d) (y:%d)", id, player->getX(), player->getY());
+        mvprintw(0, 0, "\tCOLLISIONE : %d (x:%d) (y:%d)", id, player->getX(), player->getY());
         if (tipo == 0)
-            printw(" TIPO : ALBERO");
+            mvprintw(0, 0, " TIPO : ALBERO");
         else if (tipo == 1)
-            printw(" TIPO : CESPUGLIO");
+            mvprintw(0, 0 , " TIPO : CESPUGLIO");
     }
+    */
 }
 
 void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
@@ -221,7 +242,16 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                 if (player->getSaltaDestra())
                 {
                     if (GestoreMovimento::possoDestra(map, player, listaObj))
-                        player->vaiADestra();
+                    {
+                        if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
+                        {
+                            map->spostaVistaDestra();
+                        }
+                        else
+                        {
+                            player->vaiADestra();
+                        }
+                    }
                     else
                     {
                         player->resettaSalto();
@@ -231,7 +261,16 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                 if (player->getSaltaSinistra())
                 {
                     if (GestoreMovimento::possoSinistra(map, player, listaObj))
-                        player->vaiASinistra();
+                    {
+                        if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
+                        {
+                            map->spostaVistaSinistra();
+                        }
+                        else
+                        {
+                            player->vaiASinistra();
+                        }
+                    }
                     else
                     {
                         player->resettaSalto();
@@ -259,7 +298,16 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
             if (player->getSaltaDestra())
             {
                 if (GestoreMovimento::possoDestra(map, player, listaObj))
-                    player->vaiADestra();
+                {
+                    if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
+                    {
+                        map->spostaVistaDestra();
+                    }
+                    else
+                    {
+                        player->vaiADestra();
+                    }
+                }
                 else
                 {
                     player->resettaSalto();
@@ -269,7 +317,16 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
             if (player->getSaltaSinistra())
             {
                 if (GestoreMovimento::possoSinistra(map, player, listaObj))
-                    player->vaiASinistra();
+                {
+                    if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
+                    {
+                        map->spostaVistaSinistra();
+                    }
+                    else
+                    {
+                        player->vaiASinistra();
+                    }
+                }
                 else
                 {
                     player->resettaSalto();
@@ -294,7 +351,14 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                 {
                     if (GestoreMovimento::possoDestra(map, player, listaObj))
                     {
-                        player->vaiADestra();
+                        if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
+                        {
+                            map->spostaVistaDestra();
+                        }
+                        else
+                        {
+                            player->vaiADestra();
+                        }
                         *prev = KEY_RIGHT;
                     }
                     else
@@ -307,7 +371,14 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                 {
                     if (GestoreMovimento::possoSinistra(map, player, listaObj))
                     {
-                        player->vaiASinistra();
+                        if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
+                        {
+                            map->spostaVistaSinistra();
+                        }
+                        else
+                        {
+                            player->vaiASinistra();
+                        }
                         *prev = KEY_LEFT;
                     }
                     else
@@ -336,6 +407,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
 
 int main()
 {
+    srand(time(NULL));
     setlocale(LC_ALL, "");
     //const wchar_t *wstr = L"\u2603\u26c4\U0001F638";
     initscr();
@@ -358,10 +430,18 @@ int main()
     FILE *read = fopen("asciiArtDB.txt", "r");
     ConvertiAsciiArt *asciiArt = new ConvertiAsciiArt(read);
 
-    Player *player = new Player(0, 0, 3, 15, asciiArt->getFigura("PG"));
+    Player *player = new Player(0, 0, 20, 15, asciiArt->getFigura("PG"));
     Map *map = new Map(w_win - 2, h_win - 2);
 
+    GestoreMondo *gestoreMondo = new GestoreMondo(6, map->getHeight(), 10, 2, 5, asciiArt);
+
     ListaOggetto *listaObj = new ListaOggetto();
+
+    for (int i = 0; i < 8; i++)
+    {
+        Oggetto *tmp = gestoreMondo->generaOggetto();
+        aggiungiOggetto(map, listaObj, tmp);
+    }
 
     box(debug, 0, 0);
 
@@ -369,6 +449,8 @@ int main()
     bool aggiorna = false;
     int c = -1;
     int prev = -1;
+    int IDLE_TIME = 5000;
+    int idle = IDLE_TIME;
 
     while (true)
     {
@@ -381,16 +463,26 @@ int main()
             break;
         }
 
+        if (c != prev)
+        {
+            idle = IDLE_TIME;
+        }
+
         gestioneGravitaESalto(sec, c, &prev, &aggiorna, map, player, listaObj);
 
         // Gestisco gli input da tastiera
-        elaboraInput(c, &prev, map, player, listaObj, asciiArt);
+        elaboraInput(c, &prev, map, player, listaObj, asciiArt, gestoreMondo);
 
         // aggiornamento automatico
         if (sec % SCREEN_CLOCK == 0 || c != -1)
         {
             aggiorna = true;
             sec = 0;
+        }
+
+        if (idle == 0) {
+            player->setFigura(asciiArt->getFigura("PG"));
+            aggiorna = true;
         }
 
         if (aggiorna)
@@ -403,12 +495,16 @@ int main()
         mvwprintw(debug, 1, 1, "SEC : %d", sec);
         mvwprintw(debug, 2, 1, "C : %d", c);
         mvwprintw(debug, 3, 1, "P : %d", prev);
-        mvwprintw(debug, 4, 1, "X : %d", player->getX());
-        mvwprintw(debug, 5, 1, "Y : %d", player->getY());
-        mvwprintw(debug, 6, 1, "H : %d", player->getSaltaInt());
+        mvwprintw(debug, 4, 1, "I : %d", idle);
+        mvwprintw(debug, 5, 1, "X : %d", player->getX());
+        mvwprintw(debug, 6, 1, "Y : %d", player->getY());
+        mvwprintw(debug, 7, 1, "H : %d", player->getSaltaInt());
+        mvwprintw(debug, 8, 1, player->getFigura()->next->next->c);
         wrefresh(debug);
 
         sec++;
+        if (idle > 0)
+            idle--;
         if (sec % INPUT_CLOCK == 0)
         {
             prev = -1;
