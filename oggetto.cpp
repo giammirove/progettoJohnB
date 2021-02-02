@@ -5,8 +5,20 @@
 #include "convertiAsciiArt.h"
 #include "utility.h"
 
+/*
+    Id è una variabile statica che si incrementa ad ogni 
+    invocazione del costruttore della classe Oggetto
+*/
 int Oggetto::_id = 0;
 
+/*
+    Costruttore della classe Oggetto
+    x = posizione x dell'oggetto
+    y = posizione y dell'oggetto
+    tipo = indicato il tipo di oggetto creato (guardate struttura nel file oggetto.h)
+    asciiArt = si tratta di un classe che permette di ottenere un oggetto figura a partire
+               dal file asciiArtDB.txt
+*/
 Oggetto::Oggetto(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 {
     _x = x;
@@ -17,36 +29,66 @@ Oggetto::Oggetto(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
     _myId = _id++;
 }
 
+/*
+    Ottiene l'id dell'oggetto
+    L'id è un valore univoco di ogni oggetto
+*/
 int Oggetto::getId()
 {
     return _myId;
 }
 
+/*
+    Ottiene il clock di questo oggetto
+    Ogni oggetto ha un clock differente legato al tipo dell'oggetto
+*/
 int Oggetto::getClock()
 {
     return _clock;
 }
 
+/*
+    Ottiene un valore booleano che indica se il tipo di oggetto
+    è solido oppure no
+    Con solido si intende se il player può attraversare l'oggetto
+    da sinistra, destra e dal basso (es. di non solido = piattaforma standard)
+*/
 bool Oggetto::getSolido()
 {
     return _solido;
 }
 
+/*  
+    Ottiene la lunghezza dell'oggetto
+    Calcolata in base alla figura dell'oggetto
+*/
 int Oggetto::getWidth()
 {
     return _width;
 }
 
+/*
+    Ottiene la altezza dell'oggetto
+    Calcolata in base alla figura dell'oggetto
+*/
 int Oggetto::getHeight()
 {
     return _height;
 }
 
+/*
+    Ottiene il tipo di oggetto
+*/
 TipoDiOggetto Oggetto::getTipoDiOggetto()
 {
     return _tipo;
 }
 
+/*
+    Imposta la figura dell'oggetto in base al tipo
+    tipo = indica il tipo di oggetto, in base ad esso si sceglie la figura 
+    asciiArt = oggetto che permette di ottenere la figura 
+*/
 void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 {
     _figura = new figura_t;
@@ -97,6 +139,11 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
     calcWidthAndHeight();
 }
 
+/*
+    Carica la figura in base al nome di essa
+    nome = indica il nome della figura all'interno del file "asciiArtDB.txt"
+    asciiArt = oggetto che permette di ottenere la figura
+*/
 void Oggetto::caricaFigura(char *nome, ConvertiAsciiArt *asciiArt)
 {
     if (_figura != NULL)
@@ -110,11 +157,29 @@ void Oggetto::caricaFigura(char *nome, ConvertiAsciiArt *asciiArt)
     }
 }
 
+/*
+    Ottiene la figura dell'oggeto
+*/
 figura Oggetto::ottieniFigura()
 {
     return _figura;
 }
 
+/*
+    Calcola la dimensione della figura, sia lunghezza che larghezza 
+    e salva i risultati rispettivamente nelle variabili 
+    _width e _height
+
+    Spiegazione algoritmo :
+    si salva inizialmente la minima x e la minima y
+    e la massima x e la massima y
+    controlla ogni punto della figura e verifica se 
+    i minimi/massimi attuali sono da aggiornare
+    la lunghezza calcolata sarà la differenza tra 
+    il massimo x e il minimo x
+    la altezza calcolata sarà la differenza tra 
+    il massimo y e il minimo y
+*/
 void Oggetto::calcWidthAndHeight()
 {
     if (_figura != NULL)

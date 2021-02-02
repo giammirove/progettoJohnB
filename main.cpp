@@ -18,14 +18,25 @@ using namespace std;
 const int SCREEN_CLOCK = 100000000;
 const int INPUT_CLOCK = 2000000;
 
+int H_WIN = 20;
+int W_WIN = 60;
+
 const int MOV_LATERALE_IN_ARIA = 2;
 
+/*
+    Aggiunge un oggetto alla mappa e alla lista di oggetti
+*/
 void aggiungiOggetto(Map *map, ListaOggetto *listaObj, Oggetto *obj)
 {
     map->aggiungiOggetto(*obj);
     listaObj->aggiungi(obj);
 }
 
+/*
+    Disegna nella finestra win, la porzione di mappa che 
+    il player attualmente sta osservando, ricavata
+    tramita l'offset attuale
+*/
 void disegnaMappa(WINDOW *win, Map *map)
 {
     mappa_t m = map->getMappa();
@@ -46,6 +57,9 @@ void disegnaMappa(WINDOW *win, Map *map)
     }
 }
 
+/*
+    Disegna la figura del player nella finestra win
+*/
 void disegnaPlayer(WINDOW *win, Player player)
 {
     figura fig = player.getFigura();
@@ -56,120 +70,161 @@ void disegnaPlayer(WINDOW *win, Player player)
     }
 }
 
+/*
+    Funzione che gestisce gli input (c) e agisce di conseguenza
+*/
 void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *listaObj, ConvertiAsciiArt *asciiArt, GestoreMondo *gestoreMondo)
 {
 
+    /*
+        EVENTO FRECCIA IN ALTO PREMUTA
+    */
     if (c == KEY_UP)
     {
+        // Verifico se posso andare verso l'alto
         if (GestoreMovimento::possoSu(map, player, listaObj))
         {
+            // In caso affermativo salto
             player->salta();
 
+            // Se l'input precedente è stato FRECCIA DESTRA allora effettuo un salto a destra
             if (*prev == KEY_RIGHT)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
+                // cambio la figura del player in posizione di destra
                 player->setFigura(asciiArt->getFigura("PG_DX"));
             }
+            // Se l'input precedente è stato FRECCIA SINISTRA allora effettuo un salto a sinistra
             else if (*prev == KEY_LEFT)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaSinistra();
+                // cambio la figura del player in posizione di sinistra
                 player->setFigura(asciiArt->getFigura("PG_SX"));
             }
+            // Altrimenti effettuo un semplice salto
             else
             {
+                // cambio la figura del player in posizione idle
                 player->setFigura(asciiArt->getFigura("PG"));
                 *prev = c;
             }
         }
-        /*
-        if (map->dentroMargine(player->getFigura(), 0, -1))
-        {
-            int id_coll = map->controllaCollisione(player->getFigura(), 0, -1);
-            bool solido = (id_coll != -1) ? listaObj->getDaId(id_coll).getSolido() : solido = false;
-            if (id_coll == -1 || (id_coll != -1 && solido == false))
-            {
-                
-                //player->vaiInAlto();
-            }
-        }
-        */
     }
+    /*
+        EVENTO FRECCIA SINISTRA PREMUTA
+    */
     if (c == KEY_LEFT)
     {
-
+        // Verifico se posso effettuare un movimento a sinistra
         int possoSinistra = GestoreMovimento::possoSinistra(map, player, listaObj);
+        // Verifico se è possibile spostare la vista a sinistra
         if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
         {
+            // In caso affermativo sposto la vista a sinistra
             map->spostaVistaSinistra();
+            // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
             if (*prev == KEY_UP)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaSinistra();
             }
+            // Verifico di essere arrivato al limite sinistro della mappa
             if (map->getOffset() == 0 && possoSinistra)
             {
+                // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
                 player->vaiASinistra();
             }
+            // cambio la figura del player in posizione di sinistra
             player->setFigura(asciiArt->getFigura("PG_SX"));
             *prev = c;
         }
+        // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
         else if (possoSinistra)
         {
+            // Se l'input precedente è stato FRECCIA IN ALTO effettuo un salto a sinistra
             if (*prev == KEY_UP)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaSinistra();
             }
+            // Altrimenti effettuo un semplice movimento a sinistra
             else
             {
                 player->vaiASinistra();
             }
+            // cambio la figura del player in posizione di sinistra
             player->setFigura(asciiArt->getFigura("PG_SX"));
             *prev = c;
         }
     }
+    /*
+        EVENTO FRECCIA DESTRA PREMUTA
+    */
     if (c == KEY_RIGHT)
     {
+        // Verifico se posso effettuare un movimento a destra
         int possoDestra = GestoreMovimento::possoDestra(map, player, listaObj);
+        // Verifico se è possibile spostare la vista a destra
         if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
         {
+            // In caso affermativo sposto la vista a destra
             map->spostaVistaDestra();
             Oggetto *tmp = gestoreMondo->generaOggetto();
             aggiungiOggetto(map, listaObj, tmp);
 
+            // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a destra
             if (*prev == KEY_UP)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
             }
+            // cambio la figura del player in posizione di destra
             player->setFigura(asciiArt->getFigura("PG_DX"));
             *prev = c;
         }
+        // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
         else if (possoDestra)
         {
+            // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
             if (*prev == KEY_UP)
             {
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
             }
+            // Altrimenti effettuo un semplice movimento a sinistra
             else
             {
                 player->vaiADestra();
             }
+            // cambio la figura del player in posizione di destra
             player->setFigura(asciiArt->getFigura("PG_DX"));
             *prev = c;
         }
     }
+
+#pragma region DEBUG
+    /*
+        EVENTO T PREMUTA
+        Aggiungo una piattaforma 
+    */
     if (c == 't')
     {
         aggiungiOggetto(map, listaObj, new Oggetto(player->getX() + player->getWidth() + map->getOffset() + 1, player->getY(), OS_PIATTAFORMA, asciiArt));
     }
+    /*
+        EVENTO R PREMUTA
+        Aggiungo un mulino a vento 
+    */
     if (c == 'r')
     {
         aggiungiOggetto(map, listaObj, new Oggetto(player->getX() + player->getWidth() + map->getOffset() + 1, player->getY(), OS_WINDMILL, asciiArt));
     }
+    /*
+        EVENTO SPAZIONE PREMUTA
+        Elimino un elemento alla mia destra
+    */
     if (c == ' ')
     {
         int id = map->controllaCollisionePiattaforme(player->getFigura(), 1, 0);
@@ -179,23 +234,41 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             listaObj->rimuoviDaId(id);
         }
     }
+    /*
+        EVENTO K PREMUTA
+        Aggiungo un oggetto casuale 
+    */
     if (c == 'k')
     {
         Oggetto *tmp = gestoreMondo->generaOggetto();
         aggiungiOggetto(map, listaObj, tmp);
     }
+    /*
+        EVENTO P PREMUTA
+        Mi trasformo in un rinoceronte
+    */
     if (c == 'p')
     {
         player->setFigura(asciiArt->getFigura("RINO"));
     }
+    /*
+        EVENTO O PREMUTA
+        Aggiungo un pipistrello 
+    */
     if (c == 'o')
     {
         player->setFigura(asciiArt->getFigura("BAT"));
     }
+    /*
+        EVENTO I PREMUTA
+        Aggiungo una rana 
+    */
     if (c == 'i')
     {
         player->setFigura(asciiArt->getFigura("FROG"));
     }
+
+#pragma endregion
 
     // CONTROLLA COLLISIONE
     /*
@@ -212,65 +285,94 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
     */
 }
 
+/*
+    Funzione che gestice l'aggiornamento dello schermo nella finestra win 
+*/
 void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
 {
-    //erase();
+    // Elimino ciò che era presente prima
     werase(win);
     werase(debug);
 
+    // Ridisegno i bordi
     box(win, 0, 0);
     box(debug, 0, 0);
+    // Disegno la mappa nella finestra win
     disegnaMappa(win, map);
 
+    // Disegno il player nella finestra win
     disegnaPlayer(win, *player);
 
+    // Aggiorno per apportare le modifiche
     refresh();
     wrefresh(win);
     wrefresh(debug);
 }
 
+/*
+    Funzione che gestise la gravità del player
+    Il player effettua un salto a cono con la punta tagliata
+      @@
+     @  @
+    @    @   idea generale
+*/
 void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, Player *player, ListaOggetto *listaObj)
 {
 
     // Qui sta continuando il salto
     if (player->getSaltaInt() > (player->getSaltaHeight() - MOV_LATERALE_IN_ARIA) / 2 + MOV_LATERALE_IN_ARIA)
     {
+        // Questo controllo permette di temporizzare la gravità
         if (sec % player->getClock() == 0)
         {
+            // Verifico se il player può effettuare un movimento verso il basso
             if (GestoreMovimento::possoSu(map, player, listaObj))
             {
+                // Se il player sta effettuando un salto a destra
                 if (player->getSaltaDestra())
                 {
+                    // Verifico se il player può effettuare un movimento a destra
                     if (GestoreMovimento::possoDestra(map, player, listaObj))
                     {
+                        // Verifico se è possibile spostare la vista a destra
                         if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
                         {
+                            // In caso affermativo la sposto
                             map->spostaVistaDestra();
                         }
+                        // Altrimenti mi sposto solamente a destra
                         else
                         {
                             player->vaiADestra();
                         }
                     }
+                    // Se non posso andare a destra interrompo il mio salto
                     else
                     {
                         player->resettaSalto();
                         //*prev = -1;
                     }
                 }
+
+                // Se il player sta effettuando un salto a sinistra
                 if (player->getSaltaSinistra())
                 {
+                    // Verifico se il player può effettuare un movimento a sinistra
                     if (GestoreMovimento::possoSinistra(map, player, listaObj))
                     {
+                        // Verifico se è possibile spostare la vista a sinistra
                         if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
                         {
+                            // In caso affermativo la sposto
                             map->spostaVistaSinistra();
                         }
+                        // Altrimenti mi sposto solamente a sinistra
                         else
                         {
                             player->vaiASinistra();
                         }
                     }
+                    // Se non posso andare a sinistra interrompo il mio salto
                     else
                     {
                         player->resettaSalto();
@@ -278,11 +380,15 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                     }
                 }
 
+                // Effetuo il salto
                 player->vaiInAlto();
+                // Decremento il valore attuale del salto
                 player->decrementaSalto();
 
+                // E' avvenuta una modifica allo schermo quindi è necessario un refresh
                 *aggiorna = true;
             }
+            // Altrimenti interrompo il salto
             else
             {
                 player->resettaSalto();
@@ -290,43 +396,32 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
             }
         }
     }
+
     // quando arriva in alto si sposta di uno a destra o sinistra
     else if (player->getSaltaInt() >= ((player->getSaltaHeight() - MOV_LATERALE_IN_ARIA) / 2) && player->getSaltaInt() <= ((player->getSaltaHeight() - MOV_LATERALE_IN_ARIA) / 2 + MOV_LATERALE_IN_ARIA))
     {
+        // Questo controllo permette di temporizzare la gravità
         if (sec % player->getClock() == 0)
         {
+            // Se il player sta effettuando un salto a destra
             if (player->getSaltaDestra())
             {
+                // Verifico se il player può effettuare un movimento verso destra
                 if (GestoreMovimento::possoDestra(map, player, listaObj))
                 {
+                    // Verifico se è possibile spostare la vista a destra
                     if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
                     {
+                        // In caso affermativo la sposto
                         map->spostaVistaDestra();
                     }
+                    // Altrimenti mi sposto solamente a destra
                     else
                     {
                         player->vaiADestra();
                     }
                 }
-                else
-                {
-                    player->resettaSalto();
-                    //*prev = -1;
-                }
-            }
-            if (player->getSaltaSinistra())
-            {
-                if (GestoreMovimento::possoSinistra(map, player, listaObj))
-                {
-                    if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
-                    {
-                        map->spostaVistaSinistra();
-                    }
-                    else
-                    {
-                        player->vaiASinistra();
-                    }
-                }
+                // Se non posso andare a destra interrompo il mio salto
                 else
                 {
                     player->resettaSalto();
@@ -334,69 +429,116 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                 }
             }
 
+            // Se il player sta effettuando un salto a sinistra
+            if (player->getSaltaSinistra())
+            {
+                // Verifico se il player può effettuare un movimento a sinistra
+                if (GestoreMovimento::possoSinistra(map, player, listaObj))
+                {
+                    // Verifico se è possibile spostare la vista a sinistra
+                    if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
+                    {
+                        // In caso affermativo la sposto
+                        map->spostaVistaSinistra();
+                    }
+                    // Altrimenti mi sposto solamente a sinistra
+                    else
+                    {
+                        player->vaiASinistra();
+                    }
+                }
+                // Se non posso andare a sinistra interrompo il mio salto
+                else
+                {
+                    player->resettaSalto();
+                    //*prev = -1;
+                }
+            }
+
+            // Decremento il valore attuale del salto
             player->decrementaSalto();
+            // E' avvenuta una modifica allo schermo quindi è necessario un refresh
             *aggiorna = true;
         }
     }
     // Controllo se posso scendere
-    else if (sec % 400 == 0)
+    else if (sec % (player->getClock() - 100) == 0)
     {
+        // Verifico se il player può effettuare un movimento verso il basso
         if (GestoreMovimento::possoGiu(map, player, listaObj))
         {
+            // Effetuo un movimento verso il basso
             player->vaiInBasso();
             // controllo se sto ancora scendendo da dx o sxs
             if (player->getSaltaInt() > 0)
             {
+                // Se il player sta effettuando un salto a destra
                 if (player->getSaltaDestra())
                 {
+                    // Verifico se il player può effettuare un movimento verso destra
                     if (GestoreMovimento::possoDestra(map, player, listaObj))
                     {
+                        // Verifico se è possibile spostare la vista a destra
                         if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
                         {
+                            // In caso affermativo la sposto
                             map->spostaVistaDestra();
                         }
+                        // Altrimenti mi sposto solamente a destra
                         else
                         {
                             player->vaiADestra();
                         }
                         *prev = KEY_RIGHT;
                     }
+                    // Se non posso andare a sinistra interrompo il mio salto
                     else
                     {
                         player->resettaSalto();
                         //*prev = -1;
                     }
                 }
+
+                // Se il player sta effettuando un salto a sinistra
                 if (player->getSaltaSinistra())
                 {
+                    // Verifico se il player può effettuare un movimento a sinistra
                     if (GestoreMovimento::possoSinistra(map, player, listaObj))
                     {
+                        // Verifico se è possibile spostare la vista a sinistra
                         if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
                         {
+                            // In caso affermativo la sposto
                             map->spostaVistaSinistra();
                         }
+                        // Altrimenti mi sposto solamente a sinistra
                         else
                         {
                             player->vaiASinistra();
                         }
                         *prev = KEY_LEFT;
                     }
+                    // Se non posso andare a sinistra interrompo il mio salto
                     else
                     {
                         player->resettaSalto();
                         //*prev = -1;
                     }
                 }
+                // Decremento il valore attuale del salto
                 player->decrementaSalto();
             }
+            // Altrimenti interrompo il mio salto a destra e sinistra
             else
             {
                 //*prev = -1;
                 player->resettaSaltoDestraSinistra();
             }
 
+            // E' avvenuta una modifica allo schermo quindi è necessario un refresh
             *aggiorna = true;
         }
+        // Altrimenti interrompo il mio salto
         else
         {
             player->resettaSalto();
@@ -407,6 +549,8 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
 
 int main()
 {
+    #pragma region PARAM N_CURSES
+
     srand(time(NULL));
     setlocale(LC_ALL, "");
     //const wchar_t *wstr = L"\u2603\u26c4\U0001F638";
@@ -419,29 +563,38 @@ int main()
     // nasconde il cursore
     curs_set(0);
 
-    int h_win = 20;
-    int w_win = 60;
-    WINDOW *win = newwin(h_win, w_win, 1, 1);
+    #pragma endregion
+
+    #pragma region INIT
+
+    WINDOW *win = newwin(H_WIN, W_WIN, 1, 1);
     nodelay(win, true);
     scrollok(win, TRUE);
     keypad(win, true);
-    WINDOW *debug = newwin(10, 15, 1, w_win + 5);
+    WINDOW *debug = newwin(10, 15, 1, W_WIN + 5);
 
     FILE *read = fopen("asciiArtDB.txt", "r");
     ConvertiAsciiArt *asciiArt = new ConvertiAsciiArt(read);
 
-    Player *player = new Player(0, 0, 20, 15, asciiArt->getFigura("PG"));
-    Map *map = new Map(w_win - 2, h_win - 2);
+    Player *player = new Player(0, 0, 20, 12, asciiArt->getFigura("PG"));
+    Map *map = new Map(W_WIN - 2, H_WIN - 2);
 
-    GestoreMondo *gestoreMondo = new GestoreMondo(6, map->getHeight(), 10, 2, 5, asciiArt);
+    GestoreMondo *gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 2, 5, asciiArt);
 
     ListaOggetto *listaObj = new ListaOggetto();
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 15; i++)
     {
         Oggetto *tmp = gestoreMondo->generaOggetto();
         aggiungiOggetto(map, listaObj, tmp);
+        map->spostaVistaDestra();
     }
+    for (int i = 0; i < 15; i++)
+    {
+        map->spostaVistaSinistra();
+    }
+
+    #pragma endregion
 
     box(debug, 0, 0);
 
@@ -480,7 +633,8 @@ int main()
             sec = 0;
         }
 
-        if (idle == 0) {
+        if (idle == 0)
+        {
             player->setFigura(asciiArt->getFigura("PG"));
             aggiorna = true;
         }
@@ -499,9 +653,10 @@ int main()
         mvwprintw(debug, 5, 1, "X : %d", player->getX());
         mvwprintw(debug, 6, 1, "Y : %d", player->getY());
         mvwprintw(debug, 7, 1, "H : %d", player->getSaltaInt());
-        mvwprintw(debug, 8, 1, player->getFigura()->next->next->c);
+        mvwprintw(debug, 8, 1, "OK");
         wrefresh(debug);
 
+        mvprintw(0, 40, "SIZE %d", listaObj->getSize());
         sec++;
         if (idle > 0)
             idle--;

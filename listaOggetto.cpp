@@ -3,11 +3,33 @@
 #include "listaOggetto.h"
 #include "oggetto.h"
 
+/*
+    Costrutture di ListaOggetto
+    la lista viene inizializzata a NULL
+*/
 ListaOggetto::ListaOggetto()
 {
     _lista = NULL;
 }
 
+/*
+    geSize ritorna la lunghezza totale della lista
+    scorrendola per intero
+*/
+int ListaOggetto::getSize() {
+    int s = 0;
+    listaObj t = _lista;
+    while (t != NULL)
+    {
+        s++;
+        t = t->next;
+    }
+    return s;
+}
+
+/*
+    Aggiunge un oggetto alla lista degli oggetti
+*/
 void ListaOggetto::aggiungi(Oggetto *obj)
 {
     if (_lista == NULL)
@@ -25,10 +47,16 @@ void ListaOggetto::aggiungi(Oggetto *obj)
     }
 }
 
+/*
+    Rimuove un oggetto dalla lista
+*/
 void ListaOggetto::rimuovi(Oggetto obj)
 {
 }
 
+/*
+    Rimuove un oggetto dalla lista in base all'id
+*/
 void ListaOggetto::rimuoviDaId(int id)
 {
     listaObj t = _lista;
@@ -65,6 +93,9 @@ void ListaOggetto::rimuoviDaId(int id)
     }
 }
 
+/*
+    Ottiene un oggetto in base al suo id
+*/
 Oggetto ListaOggetto::getDaId(int id)
 {
     listaObj t = _lista;

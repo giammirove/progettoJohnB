@@ -1,6 +1,9 @@
 #include <string.h>
 #include "utility.h"
 
+/*
+    Ritorna una stringa invertita rispetto all'input
+*/
 void reverse(char str[])
 {
     int len = strlen(str);
@@ -124,6 +127,9 @@ void strtokMine(char line[], char out[], char fl)
     }
 }
 
+/*
+    Rimuove un particolare carattere (c) da una stringa (s)
+*/
 void removeChar(char s[], int c)
 {
 
@@ -138,6 +144,9 @@ void removeChar(char s[], int c)
     s[j] = '\0';
 }
 
+/*
+    Rimuove i commenti da una stringa (s) , ovvero tutto ciò che viene dopo //
+*/
 void removeComment(char s[])
 {
     int i = 0, n = strlen(s), found = 0;
@@ -163,7 +172,9 @@ void removeComment(char s[])
     s[i] = '\0';
 }
 
-
+/*
+    Rimuove gli spazi vuoti iniziali
+*/ 
 void removeInitialSpace(char s[])
 {
     int i = 0, n = strlen(s), found = 0;
@@ -182,6 +193,9 @@ void removeInitialSpace(char s[])
     shift(s, i);
 }
 
+/*
+    Rimuove gli spazi vuoti finali
+*/
 void removeLastSpace(char s[])
 {
     int i = 0, n = strlen(s), found = 0;
@@ -199,6 +213,9 @@ void removeLastSpace(char s[])
     }
 }
 
+/*
+    Aggiunge un punto (c) alle coordinate x,y alla figura (fig) 
+*/
 void aggiungiPuntoAFigura(figura *_figura, int x, int y, const char c[])
 {
     if (_figura == NULL)

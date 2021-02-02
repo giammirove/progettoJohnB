@@ -5,6 +5,15 @@
 #include "convertiAsciiArt.h"
 #include "utility.h"
 
+/*
+    LISTA DEI TIPI DI OGGETTO
+    si tratta di un enum, ovvero un tipo di dato
+    dove ad ogni valore associato un numero naturale
+    es. OS_PIATTAFORMA = 0, OS_PIATTAFORMA2 = 1
+
+    I PRIMI N OGGETTI (AL MOMENTO 2) 
+    sono utilizzati per la generazione delle piattaforme
+*/
 enum TipoDiOggetto
 {
     OS_PIATTAFORMA,

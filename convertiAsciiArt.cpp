@@ -8,16 +8,27 @@
 
 using namespace std;
 
+/*
+    Costrutture della classe ConvertiAsciiArt
+    read = flusso di dati che permette di leggere il file con le figure da caricare (es. "asciiArtDB.txt")
+*/
 ConvertiAsciiArt::ConvertiAsciiArt(FILE *read)
 {
     initFigure(read);
 }
 
+/*
+    Ritorna la lista di figure caricate dal file scelto con il costruttore
+*/
 lista_figura ConvertiAsciiArt::getListaFigura()
 {
     return _lista_figura;
 }
 
+/*
+    Ritorna una figura presente in lista associata a nome
+    nome = indica il nome della figura da ritornare
+*/
 figura ConvertiAsciiArt::getFigura(const char nome[])
 {
     lista_figura t = _lista_figura;
@@ -37,6 +48,11 @@ figura ConvertiAsciiArt::getFigura(const char nome[])
     return f;
 }
 
+/*
+    Verifica se la figura è presente in lista
+    DA UTILIZZARE PRIMA DI RICHIAMARE LA FUNZIONE getFigura
+    nome = indica il nome dalla figura per la quale va verificata la presenza
+*/
 bool ConvertiAsciiArt::esisteFigura(const char nome[])
 {
     lista_figura t = _lista_figura;
@@ -57,6 +73,15 @@ bool ConvertiAsciiArt::esisteFigura(const char nome[])
 
 // PRIVATE
 
+/*
+    Legge il file preso dallo stream read
+    Esempio di struttura
+    ::PG
+     @
+    /|\
+    / \
+    ::
+*/
 void ConvertiAsciiArt::initFigure(FILE *read)
 {
     char line[256];
@@ -77,12 +102,14 @@ void ConvertiAsciiArt::initFigure(FILE *read)
                 // eslude i primi 2 cioè ::
                 if (fig != NULL)
                 {
+                    // rimuove i caratteri particolari generati dalla codifica
                     removeChar(nomeFig, '\n');
                     removeChar(nomeFig, '\t');
                     removeChar(nomeFig, '\r');
                     removeLastSpace(nomeFig);
                     aggiungiFigura(fig, nomeFig);
                 }
+                // line + 2 sposta di spazi la linea letta, ovvero rimuove ::
                 strcpy(nomeFig, line + 2);
                 fig = new figura_t;
                 n_line = 0;
@@ -103,6 +130,11 @@ void ConvertiAsciiArt::initFigure(FILE *read)
     }
 }
 
+/*
+    Aggiunge la figura alla lista 
+    fig = indica l'oggetto figura da inserire in lista
+    nome = indica il nome al quale associare fig in lista
+*/
 void ConvertiAsciiArt::aggiungiFigura(figura fig, const char nome[])
 {
     if (_lista_figura == NULL)

@@ -19,6 +19,8 @@ private:
 public:
     ListaOggetto();
 
+    int getSize();
+
     void aggiungi(Oggetto *obj);
     void rimuovi(Oggetto obj);
     void rimuoviDaId(int id);

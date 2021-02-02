@@ -9,6 +9,12 @@ using namespace std;
 
 // PUBLIC
 
+/*
+    Costruttor della classe Map
+    width = indica la lunghezza iniziale della mappa
+    height = indica la altezza iniziale della mappa
+    offset viene impostato a 0
+*/
 Map::Map(int width, int height)
 {
     // view si inizializza come la prima dimensione della mappa
@@ -21,6 +27,9 @@ Map::Map(int width, int height)
     initMap();
 }
 
+/*
+    Inizializza la mappa creando tante colonne quanto è la lunghezza iniziale
+*/
 void Map::initMap()
 {
     map = new colonna_t;
@@ -30,6 +39,10 @@ void Map::initMap()
     }
 }
 
+/*
+    GetMappa ritorna la mappa che attualmente il player sta guardando
+    ovvero scelta in base all'offset
+*/
 mappa_t Map::getMappa()
 {
     mappa_t m = map;
@@ -57,30 +70,46 @@ mappa_t Map::getMappa()
     return map;
 }
 
+/*
+    ritorna la lunghezza della mappa
+*/
 int Map::getWidth()
 {
     return this->_width;
 }
 
+/*
+    ritorna l'altezza del mondo
+*/
 int Map::getHeight()
 {
     return this->_init_height;
 }
 
+/*
+    ritorna la dimensione della vista
+*/
 int Map::getView()
 {
     return this->_view;
 }
 
+/*
+    ritorna l'offset 
+*/
 int Map::getOffset()
 {
     return this->_offset;
 }
 
+/*
+    imposta un punto della mappa in una determinata coordinata x, y
+*/
 void Map::setPunto(const char c[], int x, int y)
 {
     mappa_t m = this->map;
     bool found = false;
+    // scorre tutte le colonne finche non trova la x corretta
     while (m != NULL && found == false)
     {
         if (m->x == x)
@@ -93,6 +122,7 @@ void Map::setPunto(const char c[], int x, int y)
     {
         found = false;
         riga r = m->r;
+        // scorre tutte le righe della colonna scelta finche non trova la y corretta
         while (r != NULL && found == false)
         {
             if (r->y == y)
@@ -106,6 +136,10 @@ void Map::setPunto(const char c[], int x, int y)
     }
 }
 
+/*
+    Imposta un punto nella mappa in base alle coordinate x e y, ci associa un particolare id
+    guardare commenti della funzione setPunto
+*/
 void Map::setPunto(const char c[], int x, int y, int id)
 {
     mappa_t m = this->map;
@@ -138,6 +172,9 @@ void Map::setPunto(const char c[], int x, int y, int id)
     }
 }
 
+/*
+    Ottiene il punto alle coordinate x e y
+*/
 char *Map::getPunto(int x, int y)
 {
     mappa_t m = this->map;
@@ -175,6 +212,9 @@ char *Map::getPunto(int x, int y)
     }
 }
 
+/*
+    Controlla se alle coordinata x e y è presente un punto
+*/
 int Map::controllaCollisione(int x, int y)
 {
     mappa_t m = getMappa();
@@ -212,11 +252,25 @@ int Map::controllaCollisione(int x, int y)
     }
 }
 
+/*
+    Controlla se almeno un punto della figura ha una collisione, ovvero
+    se almeno un punto della figura si trova in una posizione già occupata
+    in mappa
+*/
 int Map::controllaCollisione(figura fig)
 {
     return controllaCollisione(fig, 0, 0);
 }
 
+/*
+    Controlla se almeno un punto della figura ha una collisione, ovvero
+    se almeno un punto della figura si trova in una posizione già occupata
+    in mappa
+    inc_x = indica di quanto incrementare il valore x di ogni punto della figura,
+            utile per verificare se la prossima posizione dopo un movimento è disponibile
+    inc_y = indica di quanto incrementare il valore y di ogni punto della figura,
+            utile per verificare se la prossima posizione dopo un movimento è disponibile
+*/
 int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
 {
     bool found = false;
@@ -238,6 +292,10 @@ int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
     return res;
 }
 
+/*
+    Controlla se posso effettuare un movimento su una piattaforma
+    in realtà non cambia niente mi sa, da rimuovere
+*/ 
 int Map::controllaCollisionePiattaforme(figura fig)
 {
     return controllaCollisionePiattaforme(fig, 0, 0);
@@ -286,6 +344,10 @@ int Map::controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y)
     return res;
 }
 
+/*
+    Aggiunge un oggetto alla mappa, ovvero aggiunge ogni punto della figura
+    dell'oggetto alla mappa con relativo id
+*/
 void Map::aggiungiOggetto(Oggetto obj)
 {
     figura fig = obj.ottieniFigura();
@@ -297,6 +359,10 @@ void Map::aggiungiOggetto(Oggetto obj)
     }
 }
 
+/*
+    Rimuove un oggetto dalla mappa, ovvero resetta ogni punto della figura
+    dell'oggetto nella mappa
+*/
 void Map::rimuoviOggetto(Oggetto obj)
 {
     figura fig = obj.ottieniFigura();
@@ -308,6 +374,10 @@ void Map::rimuoviOggetto(Oggetto obj)
     }
 }
 
+/*
+    sposta la vista destra, quindi incrementa l'offset di 1
+    e precarica 10 colonne
+*/
 void Map::spostaVistaDestra()
 {
     this->_offset++;
@@ -319,6 +389,13 @@ void Map::spostaVistaDestra()
     }
 }
 
+/*
+    Verifica se è possibile spostare la vista a destra, ovvero 
+    se il player non è in collisione con nulla alla sua destra
+    view = indica l'area del player
+    view view
+    ----@----
+*/
 bool Map::possoSpostareVistaDestra(ListaOggetto *listaObj, figura fig, int view)
 {
     int id_coll = controllaCollisione(fig, 1, 0);
@@ -327,6 +404,10 @@ bool Map::possoSpostareVistaDestra(ListaOggetto *listaObj, figura fig, int view)
     return ((id_coll == -1 || solid == false) && !dentroMargine(fig, view, 0));
 }
 
+/*
+    Sposta la vista a sinistra di 1
+    ovvero decrementa di 1 l'offset
+*/
 void Map::spostaVistaSinistra()
 {
     this->_offset--;
@@ -334,6 +415,11 @@ void Map::spostaVistaSinistra()
         this->_offset = 0;
 }
 
+/*
+    Verifica se è possibile spostare la vista a sinistra,
+    ovvero se la figura non collide o se non sono arrivato 
+    all'inizio della mappa
+*/
 bool Map::possoSpostareVistaSinistra(ListaOggetto *listaObj, figura fig, int view)
 {
     int id_coll = controllaCollisione(fig, -1, 0);
@@ -344,6 +430,9 @@ bool Map::possoSpostareVistaSinistra(ListaOggetto *listaObj, figura fig, int vie
 
 // PRIVATE
 
+/*
+    Aggiunge una riga alla riga passata come input, con valore y uguale a y parametro
+*/
 void Map::aggiungiRiga(riga *r, int y)
 {
 
@@ -356,6 +445,9 @@ void Map::aggiungiRiga(riga *r, int y)
     *r = t;
 }
 
+/*
+    Crea una nuova colonna alla mappa, e il numero della colonna è x
+*/
 void Map::creaColonna(int x)
 {
 
@@ -367,6 +459,10 @@ void Map::creaColonna(int x)
     map = m;
 }
 
+/*
+    Aggiunge una colonna alla mappa e il numero della colonna è x, 
+    inoltre crea tante righe per la colonna quanto è l'altezza della mappa
+*/
 void Map::aggiungiColonna(int x)
 {
     creaColonna(x);
@@ -376,6 +472,11 @@ void Map::aggiungiColonna(int x)
     }
 }
 
+/*
+    Verifica se le coordinate x, y sono all'interno dei margini della mappa
+    se 0 <= x < _view
+    se 0 <= y < _init_height
+*/
 bool Map::dentroMargine(int x, int y)
 {
     bool dentro = true;
@@ -393,6 +494,10 @@ bool Map::dentroMargine(figura fig)
     return dentroMargine(fig, 0, 0);
 }
 
+/*
+    Verifica se ogni punto della figura incrementato di inc_x e inc_y
+    rispettivamente per x e y, sono interni ai margini della mappa
+*/
 bool Map::dentroMargine(figura fig, int inc_x, int inc_y)
 {
     bool dentro = true;
