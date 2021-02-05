@@ -22,7 +22,10 @@ Player::Player(int x, int y, int view, int saltaHeight)
     _view = view;
     _clock = 500;
     _gravita = true;
+    _aterra = true;
     _saltaHeight = saltaHeight;
+    _score = 0;
+    _vita = 3;
     resettaSalto();
 }
 
@@ -37,10 +40,28 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _view = view;
     _clock = 500;
     _gravita = true;
+    _aterra = true;
     _saltaHeight = saltaHeight;
+    _score = 0;
+    _vita = 3;
     resettaSalto();
 
     setFigura(fig);
+}
+
+
+/*
+    Ottiene lo score del player
+*/
+int Player::getScore(){
+    return _score;
+}
+
+/*
+    Ottiene la vita del player
+*/
+int Player::getVita(){
+    return _vita;
 }
 
 /*
@@ -97,6 +118,34 @@ int Player::getClock()
 bool Player::getGravita()
 {
     return _gravita;
+}
+
+
+/*
+    Ritorna se il player si trova a terra
+*/
+bool Player::getATerra() {
+    return _aterra;
+}
+
+/*
+    Imposta se il player si trova a terra
+*/
+bool Player::setATerra(bool val) {
+    _aterra = val;
+    return _aterra;
+}
+
+bool Player::stoSaltando() {
+    return (getSaltaInt() > (getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2 + _MOV_LATERALE_IN_ARIA);
+}
+
+bool Player::sonoInAriaDuranteIlSalto() {
+    return (getSaltaInt() >= ((getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2) && getSaltaInt() <= ((getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2 + _MOV_LATERALE_IN_ARIA));
+}
+
+bool Player::stoScendendo() {
+    return (getSaltaInt() < ((getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2));
 }
 
 /*
@@ -273,4 +322,67 @@ void Player::aggiornaFigura(int inc_x, int inc_y)
         t->y = t->y + inc_y;
         t = t->next;
     }
+}
+
+/*
+    Decrementa la vita del player di n
+*/
+int Player::decrementaVita(int n) {
+    _vita -= n;
+        if (_vita < 0) _vita = 0;
+    return _vita;
+}
+
+/*
+    Decrementa la vita del player di 1
+*/
+int Player::decrementaVita() {
+    return decrementaVita(1);
+}
+
+/*
+    Incrementa la vita del player di n 
+*/
+int Player::incrementaVita(int n) {
+    _vita += n;
+    if (_vita > _MAX_VITA) _vita = _MAX_VITA;
+    return _vita;
+}
+
+/*
+    Incrementa la vita del player di 1
+*/
+int Player::incrementaVita() {
+    return incrementaVita(1);
+}
+
+/*
+    Decrementa lo score del player di n
+*/
+int Player::decrementaScore(int n) {
+    _score -= n;
+        if (_score < 0) _score = 0;
+    return _score;
+}
+
+/*
+    Decrementa lo score del player di 1
+*/
+int Player::decrementaScore() {
+    return decrementaScore(1);
+}
+
+/*
+    Incrementa lo score del player di n 
+*/
+int Player::incrementaScore(int n) {
+    _score += n;
+    return _score;
+}
+
+/*
+    Incrementa lo score del player di 1
+*/
+int Player::incrementaScore() {
+    return incrementaScore(1);
 }

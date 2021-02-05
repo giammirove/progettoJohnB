@@ -57,6 +57,8 @@ public:
 
     void initMap();
     mappa_t getMappa();
+    mappa_t calcMappa();
+    mappa_t getMappaCompleta();
     int getWidth();
     int getHeight();
     int getView();
@@ -88,6 +90,7 @@ private:
     int _width;
     int _init_height;
     mappa_t map;
+    mappa_t view_map;
 
     void aggiungiRiga(riga *r, int y);
 

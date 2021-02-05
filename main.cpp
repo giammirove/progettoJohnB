@@ -33,6 +33,29 @@ void aggiungiOggetto(Map *map, ListaOggetto *listaObj, Oggetto *obj)
 }
 
 /*
+    Aggiunge un blocco al mondo
+*/
+void aggiungiBloccoAlMondo(Map *map, Player *player, ListaOggetto *listaObj, GestoreMondo *gestoreMondo)
+{
+    Oggetto *tmp = gestoreMondo->generaOggetto();
+    aggiungiOggetto(map, listaObj, tmp);
+    if ((player->getX() + map->getOffset()) % 7 == 0)
+        player->incrementaScore();
+}
+
+/*
+    Disegna i punti vita del player e score
+*/
+void disegnaScoreEVita(WINDOW *win, Player *player)
+{
+    for (int i = 0; i < player->getVita() * 2; i += 2)
+    {
+        mvwprintw(win, 0 + 1, i + 1, "♥");
+    }
+    mvwprintw(win, 1 + 1, 0 + 1, "Score %d", player->getScore());
+}
+
+/*
     Disegna nella finestra win, la porzione di mappa che 
     il player attualmente sta osservando, ricavata
     tramita l'offset attuale
@@ -79,7 +102,7 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
     /*
         EVENTO FRECCIA IN ALTO PREMUTA
     */
-    if (c == KEY_UP)
+    if (c == KEY_UP && player->getATerra())
     {
         // Verifico se posso andare verso l'alto
         if (GestoreMovimento::possoSu(map, player, listaObj))
@@ -164,43 +187,74 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
     */
     if (c == KEY_RIGHT)
     {
-        // Verifico se posso effettuare un movimento a destra
-        int possoDestra = GestoreMovimento::possoDestra(map, player, listaObj);
-        // Verifico se è possibile spostare la vista a destra
-        if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
+        if (player->getATerra())
         {
-            // In caso affermativo sposto la vista a destra
-            map->spostaVistaDestra();
-            Oggetto *tmp = gestoreMondo->generaOggetto();
-            aggiungiOggetto(map, listaObj, tmp);
+            // Verifico se posso effettuare un movimento a destra
+            int possoDestra = GestoreMovimento::possoDestra(map, player, listaObj);
+            // Verifico se è possibile spostare la vista a destra
+            if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
+            {
+                // In caso affermativo sposto la vista a destra
+                map->spostaVistaDestra();
+                aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
 
-            // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a destra
-            if (*prev == KEY_UP)
-            {
-                player->resettaSaltoDestraSinistra();
-                player->saltaDestra();
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a destra
+                if (*prev == KEY_UP)
+                {
+                    player->resettaSaltoDestraSinistra();
+                    player->saltaDestra();
+                }
+                // cambio la figura del player in posizione di destra
+                player->setFigura(asciiArt->getFigura("PG_DX"));
+                *prev = c;
             }
-            // cambio la figura del player in posizione di destra
-            player->setFigura(asciiArt->getFigura("PG_DX"));
-            *prev = c;
+            // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
+            else if (possoDestra)
+            {
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
+                if (*prev == KEY_UP)
+                {
+                    player->resettaSaltoDestraSinistra();
+                    player->saltaDestra();
+                }
+                // Altrimenti effettuo un semplice movimento a sinistra
+                else
+                {
+                    player->vaiADestra();
+                }
+                // cambio la figura del player in posizione di destra
+                player->setFigura(asciiArt->getFigura("PG_DX"));
+                *prev = c;
+            }
         }
-        // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
-        else if (possoDestra)
+        else if (*prev == KEY_UP)
         {
-            // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
-            if (*prev == KEY_UP)
+            // Verifico se posso effettuare un movimento a destra
+            int possoDestra = GestoreMovimento::possoDestra(map, player, listaObj);
+            // Verifico se è possibile spostare la vista a destra
+            if (map->possoSpostareVistaDestra(listaObj, player->getFigura(), player->getView()))
             {
+                // In caso affermativo sposto la vista a destra
+                map->spostaVistaDestra();
+                aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
+
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a destra
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
+                // cambio la figura del player in posizione di destra
+                player->setFigura(asciiArt->getFigura("PG_DX"));
+                *prev = c;
             }
-            // Altrimenti effettuo un semplice movimento a sinistra
-            else
+            // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
+            else if (possoDestra)
             {
-                player->vaiADestra();
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
+                player->resettaSaltoDestraSinistra();
+                player->saltaDestra();
+                // cambio la figura del player in posizione di destra
+                player->setFigura(asciiArt->getFigura("PG_DX"));
+                *prev = c;
             }
-            // cambio la figura del player in posizione di destra
-            player->setFigura(asciiArt->getFigura("PG_DX"));
-            *prev = c;
         }
     }
 
@@ -303,6 +357,9 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
     // Disegno il player nella finestra win
     disegnaPlayer(win, *player);
 
+    // Disegno score e vita del player
+    disegnaScoreEVita(win, player);
+
     // Aggiorno per apportare le modifiche
     refresh();
     wrefresh(win);
@@ -316,11 +373,11 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
      @  @
     @    @   idea generale
 */
-void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, Player *player, ListaOggetto *listaObj)
+void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, Player *player, ListaOggetto *listaObj, GestoreMondo *gestoreMondo)
 {
 
     // Qui sta continuando il salto
-    if (player->getSaltaInt() > (player->getSaltaHeight() - MOV_LATERALE_IN_ARIA) / 2 + MOV_LATERALE_IN_ARIA)
+    if (player->stoSaltando())
     {
         // Questo controllo permette di temporizzare la gravità
         if (sec % player->getClock() == 0)
@@ -339,6 +396,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                         {
                             // In caso affermativo la sposto
                             map->spostaVistaDestra();
+                            aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
                         }
                         // Altrimenti mi sposto solamente a destra
                         else
@@ -398,7 +456,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
     }
 
     // quando arriva in alto si sposta di uno a destra o sinistra
-    else if (player->getSaltaInt() >= ((player->getSaltaHeight() - MOV_LATERALE_IN_ARIA) / 2) && player->getSaltaInt() <= ((player->getSaltaHeight() - MOV_LATERALE_IN_ARIA) / 2 + MOV_LATERALE_IN_ARIA))
+    else if (player->sonoInAriaDuranteIlSalto())
     {
         // Questo controllo permette di temporizzare la gravità
         if (sec % player->getClock() == 0)
@@ -414,6 +472,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                     {
                         // In caso affermativo la sposto
                         map->spostaVistaDestra();
+                        aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
                     }
                     // Altrimenti mi sposto solamente a destra
                     else
@@ -462,7 +521,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
         }
     }
     // Controllo se posso scendere
-    else if (sec % (player->getClock() - 100) == 0)
+    else if (sec % player->getClock() == 0)
     {
         // Verifico se il player può effettuare un movimento verso il basso
         if (GestoreMovimento::possoGiu(map, player, listaObj))
@@ -483,6 +542,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                         {
                             // In caso affermativo la sposto
                             map->spostaVistaDestra();
+                            aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
                         }
                         // Altrimenti mi sposto solamente a destra
                         else
@@ -545,11 +605,22 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
             *prev = -1;
         }
     }
+
+    if (GestoreMovimento::possoGiu(map, player, listaObj))
+    {
+        mvprintw(0, 50, "POSSO GIU %d", c);
+        player->setATerra(false);
+    }
+    else
+    {
+        mvprintw(0, 50, "NON POSSO GIU %d", c);
+        player->setATerra(true);
+    }
 }
 
 int main()
 {
-    #pragma region PARAM N_CURSES
+#pragma region PARAM N_CURSES
 
     srand(time(NULL));
     setlocale(LC_ALL, "");
@@ -563,9 +634,9 @@ int main()
     // nasconde il cursore
     curs_set(0);
 
-    #pragma endregion
+#pragma endregion
 
-    #pragma region INIT
+#pragma region INIT
 
     WINDOW *win = newwin(H_WIN, W_WIN, 1, 1);
     nodelay(win, true);
@@ -594,7 +665,7 @@ int main()
         map->spostaVistaSinistra();
     }
 
-    #pragma endregion
+#pragma endregion
 
     box(debug, 0, 0);
 
@@ -621,7 +692,7 @@ int main()
             idle = IDLE_TIME;
         }
 
-        gestioneGravitaESalto(sec, c, &prev, &aggiorna, map, player, listaObj);
+        gestioneGravitaESalto(sec, c, &prev, &aggiorna, map, player, listaObj, gestoreMondo);
 
         // Gestisco gli input da tastiera
         elaboraInput(c, &prev, map, player, listaObj, asciiArt, gestoreMondo);
@@ -653,7 +724,7 @@ int main()
         mvwprintw(debug, 5, 1, "X : %d", player->getX());
         mvwprintw(debug, 6, 1, "Y : %d", player->getY());
         mvwprintw(debug, 7, 1, "H : %d", player->getSaltaInt());
-        mvwprintw(debug, 8, 1, "OK");
+        mvwprintw(debug, 8, 1, "TERRA : %d", player->getATerra());
         wrefresh(debug);
 
         mvprintw(0, 40, "SIZE %d", listaObj->getSize());
