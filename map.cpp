@@ -43,7 +43,14 @@ void Map::initMap()
     GetMappa ritorna la mappa che attualmente il player sta guardando
     ovvero scelta in base all'offset
 */
-mappa_t Map::getMappa()
+mappa_t Map::getMappa(){
+    return view_map;
+}
+
+/*
+    Calcola la mappa che attualmente il player sta guardando
+*/
+mappa_t Map::calcMappa()
 {
     mappa_t m = map;
     int c = 0;
@@ -70,6 +77,12 @@ mappa_t Map::getMappa()
     return map;
 }
 
+/*
+    Ottiene la mappa completa
+*/
+mappa_t Map::getMappaCompleta(){
+    return map;
+}
 /*
     ritorna la lunghezza della mappa
 */
@@ -387,6 +400,7 @@ void Map::spostaVistaDestra()
         aggiungiColonna(_width);
         _width++;
     }
+    view_map = calcMappa();
 }
 
 /*
@@ -413,6 +427,7 @@ void Map::spostaVistaSinistra()
     this->_offset--;
     if (this->_offset < 0)
         this->_offset = 0;
+    view_map = calcMappa();
 }
 
 /*
