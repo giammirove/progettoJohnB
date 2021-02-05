@@ -180,6 +180,20 @@ bool Player::getSaltaSinistra() {
 }
 
 /*
+    Verifica se sta toccando la lava
+*/
+bool Player::toccoLaLava(int map_h){
+    figura f = _figura;
+    while (f->next != NULL) {
+        f = f->next;
+    }
+    if (f != NULL) {
+        if(f->y == map_h-1) return true;
+    }
+    return false;
+}
+
+/*
     Ritorna la figura corrente del player
 */
 figura Player::getFigura()
@@ -385,4 +399,12 @@ int Player::incrementaScore(int n) {
 */
 int Player::incrementaScore() {
     return incrementaScore(1);
+}
+
+/*
+    Muore all'istante
+*/
+int Player::muori(){
+    _vita = 0;
+    return _vita;
 }

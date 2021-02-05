@@ -1,6 +1,9 @@
 #ifndef UTILITY_H_INCLUDED
 #define UTILITY_H_INCLUDED
 
+// genera un numero intero casuale
+int randomNumber (int min, int max);
+
 // reverse a string
 void reverse(char str[]);
 

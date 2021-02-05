@@ -14,26 +14,26 @@ class Nemico : public Oggetto {
 protected:
 	int _vita;
 	int _attacco;
-	Map _mappa;
+	Map *_mappa;
 	bool _direction;
 public:
-	Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt, Map mappa);
+	Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt, Map *mappa);
 	~Nemico();
 	void muoviNemico();
 	
 	void vaiASinistra(int numeroPassi);
 	void vaiADestra(int numeroPassi);
 	bool getDirection();
-	void changeDirection();
+	bool changeDirection();
 	int *getZampaDestra();
 	int *getZampaSinistra();
-	bool minore_coppia(int x1, int y2, int x2, int y2);
-	bool maggiore_coppia(int x1, int y2, int x2, int y2);
+	bool minore_coppia(int x1, int y1, int x2, int y2);
+	bool maggiore_coppia(int x1, int y1, int x2, int y2);
 	abisso morte();
+
+	void impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
 };
 typedef Nemico *ptr_nemico;
-
-
 
 
 #endif

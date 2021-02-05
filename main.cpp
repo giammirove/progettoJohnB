@@ -12,13 +12,21 @@
 #include "convertiAsciiArt.h"
 #include "gestoreMovimento.h"
 #include "gestoreMondo.h"
+#include "listaNemici.h"
+#include "nemico.h"
 
 using namespace std;
 
 const int SCREEN_CLOCK = 100000000;
 const int INPUT_CLOCK = 2000000;
 
-int H_WIN = 20;
+const int IDLE_TIME = 5000;
+const int MAX_SEC = 20000;
+
+const int NUM_PIATTAFORME = 10;
+const int NUM_NEMICI = 10;
+
+int H_WIN = 24;
 int W_WIN = 60;
 
 const int MOV_LATERALE_IN_ARIA = 2;
@@ -33,14 +41,26 @@ void aggiungiOggetto(Map *map, ListaOggetto *listaObj, Oggetto *obj)
 }
 
 /*
+    Aggiungi un nemico alla lista degli oggetti e alla mappa
+*/
+void aggiungiNemico(Map *map, ListaNemici *listaNem, Nemico *nem){
+    map->aggiungiOggetto(*nem);
+    listaNem->aggiungi(nem);
+}
+
+/*
     Aggiunge un blocco al mondo
 */
-void aggiungiBloccoAlMondo(Map *map, Player *player, ListaOggetto *listaObj, GestoreMondo *gestoreMondo)
+void aggiungiBloccoAlMondo(Map *map, Player *player, ListaOggetto *listaObj, ListaNemici *listaNem, ConvertiAsciiArt *asciiArt, GestoreMondo *gestoreMondo)
 {
+    if (gestoreMondo->generoPavimento())
+        aggiungiOggetto(map, listaObj, new Oggetto(gestoreMondo->getXPavimento(), map->getHeight() - 2, OS_PAVIMENTO, asciiArt));
     Oggetto *tmp = gestoreMondo->generaOggetto();
     aggiungiOggetto(map, listaObj, tmp);
     if ((player->getX() + map->getOffset()) % 7 == 0)
         player->incrementaScore();
+    Nemico *nem = gestoreMondo->generaNemico(map);
+    aggiungiNemico(map, listaNem, nem);
 }
 
 /*
@@ -94,9 +114,20 @@ void disegnaPlayer(WINDOW *win, Player player)
 }
 
 /*
+    Disegna la lava 
+*/
+void disegnaLava(WINDOW *win)
+{
+    for (int i = 0; i < W_WIN; i++)
+    {
+        mvwaddch(win, H_WIN - 1, i, '~' | COLOR_PAIR(1));
+    }
+}
+
+/*
     Funzione che gestisce gli input (c) e agisce di conseguenza
 */
-void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *listaObj, ConvertiAsciiArt *asciiArt, GestoreMondo *gestoreMondo)
+void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *listaObj, ListaNemici *listaNem, ConvertiAsciiArt *asciiArt, GestoreMondo *gestoreMondo)
 {
 
     /*
@@ -135,57 +166,93 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             }
         }
     }
+
     /*
         EVENTO FRECCIA SINISTRA PREMUTA
     */
-    if (c == KEY_LEFT)
+    if (c == KEY_LEFT && (player->getATerra() || !(player->getSaltaDestra() || player->getSaltaSinistra())))
     {
-        // Verifico se posso effettuare un movimento a sinistra
-        int possoSinistra = GestoreMovimento::possoSinistra(map, player, listaObj);
-        // Verifico se è possibile spostare la vista a sinistra
-        if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
+        if (player->getATerra())
         {
-            // In caso affermativo sposto la vista a sinistra
-            map->spostaVistaSinistra();
-            // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
-            if (*prev == KEY_UP)
+            // Verifico se posso effettuare un movimento a sinistra
+            int possoSinistra = GestoreMovimento::possoSinistra(map, player, listaObj);
+            // Verifico se è possibile spostare la vista a sinistra
+            if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
             {
-                player->resettaSaltoDestraSinistra();
-                player->saltaSinistra();
+                // In caso affermativo sposto la vista a sinistra
+                map->spostaVistaSinistra();
+                aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
+
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
+                if (*prev == KEY_UP)
+                {
+                    player->resettaSaltoDestraSinistra();
+                    player->saltaSinistra();
+                }
+
+                // Verifico di essere arrivato al limite sinistro della mappa
+                if (map->getOffset() == 0 && possoSinistra)
+                {
+                    // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
+                    player->vaiASinistra();
+                }
+                // cambio la figura del player in posizione di sinistra
+                player->setFigura(asciiArt->getFigura("PG_SX"));
+                *prev = c;
             }
-            // Verifico di essere arrivato al limite sinistro della mappa
-            if (map->getOffset() == 0 && possoSinistra)
+            // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
+            else if (possoSinistra)
             {
-                // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
-                player->vaiASinistra();
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
+                if (*prev == KEY_UP)
+                {
+                    player->resettaSaltoDestraSinistra();
+                    player->saltaSinistra();
+                }
+                // Altrimenti effettuo un semplice movimento a sinistra
+                else
+                {
+                    player->vaiASinistra();
+                }
+                // cambio la figura del player in posizione di sinistra
+                player->setFigura(asciiArt->getFigura("PG_SX"));
+                *prev = c;
             }
-            // cambio la figura del player in posizione di sinistra
-            player->setFigura(asciiArt->getFigura("PG_SX"));
-            *prev = c;
         }
-        // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
-        else if (possoSinistra)
+        else if (*prev == KEY_UP)
         {
-            // Se l'input precedente è stato FRECCIA IN ALTO effettuo un salto a sinistra
-            if (*prev == KEY_UP)
+            // Verifico se posso effettuare un movimento a sinistra
+            int possoSinistra = GestoreMovimento::possoSinistra(map, player, listaObj);
+            // Verifico se è possibile spostare la vista a sinistra
+            if (map->possoSpostareVistaSinistra(listaObj, player->getFigura(), player->getView()))
             {
+                // In caso affermativo sposto la vista a sinistra
+                map->spostaVistaSinistra();
+                aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
+
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
                 player->resettaSaltoDestraSinistra();
                 player->saltaSinistra();
+                // cambio la figura del player in posizione di sinistra
+                player->setFigura(asciiArt->getFigura("PG_SX"));
             }
-            // Altrimenti effettuo un semplice movimento a sinistra
-            else
+            // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
+            else if (possoSinistra)
             {
-                player->vaiASinistra();
+                // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
+                player->resettaSaltoDestraSinistra();
+                player->saltaSinistra();
+                // cambio la figura del player in posizione di sinistra
+                player->setFigura(asciiArt->getFigura("PG_SX"));
             }
-            // cambio la figura del player in posizione di sinistra
-            player->setFigura(asciiArt->getFigura("PG_SX"));
             *prev = c;
         }
     }
+
     /*
         EVENTO FRECCIA DESTRA PREMUTA
     */
-    if (c == KEY_RIGHT)
+    if (c == KEY_RIGHT && (player->getATerra() || !(player->getSaltaDestra() || player->getSaltaSinistra())))
     {
         if (player->getATerra())
         {
@@ -196,7 +263,7 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             {
                 // In caso affermativo sposto la vista a destra
                 map->spostaVistaDestra();
-                aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
+                aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
 
                 // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a destra
                 if (*prev == KEY_UP)
@@ -236,14 +303,13 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
             {
                 // In caso affermativo sposto la vista a destra
                 map->spostaVistaDestra();
-                aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
+                aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
 
                 // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a destra
                 player->resettaSaltoDestraSinistra();
                 player->saltaDestra();
                 // cambio la figura del player in posizione di destra
                 player->setFigura(asciiArt->getFigura("PG_DX"));
-                *prev = c;
             }
             // Se non è possibile spostare la vista a sinistra, ma invece è possibile effettuare un movimento
             else if (possoDestra)
@@ -253,8 +319,8 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
                 player->saltaDestra();
                 // cambio la figura del player in posizione di destra
                 player->setFigura(asciiArt->getFigura("PG_DX"));
-                *prev = c;
             }
+            *prev = c;
         }
     }
 
@@ -349,7 +415,7 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
     werase(debug);
 
     // Ridisegno i bordi
-    box(win, 0, 0);
+    wborder(win, 0, 0, 0, 0, 0, 0, 0, 0);
     box(debug, 0, 0);
     // Disegno la mappa nella finestra win
     disegnaMappa(win, map);
@@ -360,10 +426,28 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
     // Disegno score e vita del player
     disegnaScoreEVita(win, player);
 
+    // Disegno la lava
+    disegnaLava(win);
+
     // Aggiorno per apportare le modifiche
     refresh();
     wrefresh(win);
     wrefresh(debug);
+}
+
+/*
+    Schermata di perdita
+*/
+void schermataDiPerdita(WINDOW *win)
+{
+    // Elimino ciò che era presente prima
+    werase(win);
+    // Ridisegno i bordi
+    wborder(win, 0, 0, 0, 0, 0, 0, 0, 0);
+    mvwprintw(win, (H_WIN / 2), (W_WIN / 2) - 5, "HAI PERSO!");
+
+    // Aggiorno per apportare le modifiche
+    wrefresh(win);
 }
 
 /*
@@ -373,7 +457,7 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
      @  @
     @    @   idea generale
 */
-void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, Player *player, ListaOggetto *listaObj, GestoreMondo *gestoreMondo)
+void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, Player *player, ListaOggetto *listaObj, ListaNemici *listaNem, ConvertiAsciiArt *asciiArt, GestoreMondo *gestoreMondo)
 {
 
     // Qui sta continuando il salto
@@ -396,7 +480,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                         {
                             // In caso affermativo la sposto
                             map->spostaVistaDestra();
-                            aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
+                            aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
                         }
                         // Altrimenti mi sposto solamente a destra
                         else
@@ -472,7 +556,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                     {
                         // In caso affermativo la sposto
                         map->spostaVistaDestra();
-                        aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
+                        aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
                     }
                     // Altrimenti mi sposto solamente a destra
                     else
@@ -521,10 +605,10 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
         }
     }
     // Controllo se posso scendere
-    else if (sec % player->getClock() == 0)
+    else if (sec % player->getClock() == 0 && player->stoScendendo())
     {
         // Verifico se il player può effettuare un movimento verso il basso
-        if (GestoreMovimento::possoGiu(map, player, listaObj))
+        if (player->getATerra() == false)
         {
             // Effetuo un movimento verso il basso
             player->vaiInBasso();
@@ -542,14 +626,14 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                         {
                             // In caso affermativo la sposto
                             map->spostaVistaDestra();
-                            aggiungiBloccoAlMondo(map, player, listaObj, gestoreMondo);
+                            aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
                         }
                         // Altrimenti mi sposto solamente a destra
                         else
                         {
                             player->vaiADestra();
                         }
-                        *prev = KEY_RIGHT;
+                        //*prev = KEY_RIGHT;
                     }
                     // Se non posso andare a sinistra interrompo il mio salto
                     else
@@ -576,7 +660,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
                         {
                             player->vaiASinistra();
                         }
-                        *prev = KEY_LEFT;
+                        //*prev = KEY_LEFT;
                     }
                     // Se non posso andare a sinistra interrompo il mio salto
                     else
@@ -633,6 +717,8 @@ int main()
 
     // nasconde il cursore
     curs_set(0);
+    start_color();
+    init_pair(1, COLOR_RED, COLOR_BLACK);
 
 #pragma endregion
 
@@ -642,7 +728,7 @@ int main()
     nodelay(win, true);
     scrollok(win, TRUE);
     keypad(win, true);
-    WINDOW *debug = newwin(10, 15, 1, W_WIN + 5);
+    WINDOW *debug = newwin(15, 15, 1, W_WIN + 5);
 
     FILE *read = fopen("asciiArtDB.txt", "r");
     ConvertiAsciiArt *asciiArt = new ConvertiAsciiArt(read);
@@ -650,14 +736,14 @@ int main()
     Player *player = new Player(0, 0, 20, 12, asciiArt->getFigura("PG"));
     Map *map = new Map(W_WIN - 2, H_WIN - 2);
 
-    GestoreMondo *gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 2, 5, asciiArt);
+    GestoreMondo *gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 6, 12, NUM_PIATTAFORME, NUM_NEMICI, asciiArt);
 
     ListaOggetto *listaObj = new ListaOggetto();
+    ListaNemici *listaNem = new ListaNemici();
 
     for (int i = 0; i < 15; i++)
     {
-        Oggetto *tmp = gestoreMondo->generaOggetto();
-        aggiungiOggetto(map, listaObj, tmp);
+        aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
         map->spostaVistaDestra();
     }
     for (int i = 0; i < 15; i++)
@@ -673,11 +759,15 @@ int main()
     bool aggiorna = false;
     int c = -1;
     int prev = -1;
-    int IDLE_TIME = 5000;
     int idle = IDLE_TIME;
 
-    while (true)
+    while (true && player->getVita() > 0)
     {
+        if (player->toccoLaLava(map->getHeight()))
+        {
+            player->muori();
+            continue;
+        }
 
         aggiorna = false;
         c = wgetch(win);
@@ -692,17 +782,20 @@ int main()
             idle = IDLE_TIME;
         }
 
-        gestioneGravitaESalto(sec, c, &prev, &aggiorna, map, player, listaObj, gestoreMondo);
+        gestioneGravitaESalto(sec, c, &prev, &aggiorna, map, player, listaObj, listaNem, asciiArt, gestoreMondo);
 
         // Gestisco gli input da tastiera
-        elaboraInput(c, &prev, map, player, listaObj, asciiArt, gestoreMondo);
+        elaboraInput(c, &prev, map, player, listaObj, listaNem, asciiArt, gestoreMondo);
 
         // aggiornamento automatico
-        if (sec % SCREEN_CLOCK == 0 || c != -1)
+        if (sec % SCREEN_CLOCK == 0)
         {
             aggiorna = true;
             sec = 0;
         }
+
+        if (c != -1)
+            aggiorna = true;
 
         if (idle == 0)
         {
@@ -721,10 +814,11 @@ int main()
         mvwprintw(debug, 2, 1, "C : %d", c);
         mvwprintw(debug, 3, 1, "P : %d", prev);
         mvwprintw(debug, 4, 1, "I : %d", idle);
-        mvwprintw(debug, 5, 1, "X : %d", player->getX());
+        mvwprintw(debug, 5, 1, "X : %d", player->getX() + map->getOffset());
         mvwprintw(debug, 6, 1, "Y : %d", player->getY());
         mvwprintw(debug, 7, 1, "H : %d", player->getSaltaInt());
         mvwprintw(debug, 8, 1, "TERRA : %d", player->getATerra());
+        mvwprintw(debug, 9, 1, "SCENDO : %d", player->stoScendendo());
         wrefresh(debug);
 
         mvprintw(0, 40, "SIZE %d", listaObj->getSize());
@@ -735,7 +829,14 @@ int main()
         {
             prev = -1;
         }
+        if (sec >= MAX_SEC)
+            sec = 0;
     }
+
+    schermataDiPerdita(win);
+
+    while (true)
+        ;
 
     getch();
     endwin(); /* End curses mode		  */

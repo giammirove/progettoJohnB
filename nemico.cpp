@@ -1,12 +1,13 @@
 #include "oggetto.h"
 #include "nemico.h"
 
-Nemico::Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt, Map mappa)
+Nemico::Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt, Map *mappa)
 	:Oggetto(x, y, tipo, asciiArt)
 {
 	_mappa = mappa;
-	lor = true;
+	_direction = true;
 }
+
 bool Nemico::minore_coppia(int x1, int y1,int x2, int y2)
 {
 	bool return_value = false; /* returna true se la prima coppia è minore della seconda */
@@ -115,7 +116,7 @@ void Nemico::vaiADestra(int numeroPassi)
 void Nemico::muoviNemico()
 {
 	if(getDirection()){//true se sta andando a sinistra
-		if(controllaCollisionePiattaforma(ottieniFigura(), -1, 1) == -1){
+		if(_mappa->controllaCollisionePiattaforme(ottieniFigura(), -1, 1) == -1){
 			vaiASinistra(1);	
 		}
 		else{
@@ -125,7 +126,7 @@ void Nemico::muoviNemico()
 
 	}
 	else{
-		if(controllaCollisionePiattaforma(ottieniFigura(), 1, 1) == -1){
+		if(_mappa->controllaCollisionePiattaforme(ottieniFigura(), 1, 1) == -1){
 			vaiADestra(1);	
 		}
 		else{
@@ -138,4 +139,24 @@ void Nemico::muoviNemico()
 abisso Nemico::morte()
 {
 	
+}
+
+void Nemico::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt) {
+	Oggetto::impostaFigura(tipo, asciiArt);
+	switch (tipo)
+	{
+	
+	case OS_NEMICO1:
+		_vita = 1;
+		_attacco = 1;
+	break;
+
+	case OS_NEMICO2:
+		_vita = 2;
+		_attacco = 1;
+	break;
+	
+	default:
+		break;
+	}
 }

@@ -1,5 +1,5 @@
-#ifndef LISTAOGGETTO_H_INCLUDED
-#define LISTAOGGETTO_H_INCLUDED
+#ifndef LISTANEMICI_H_INCLUDED
+#define LISTANEMICI_H_INCLUDED
 
 #include <string.h>
 #include "nemico.h"
@@ -24,7 +24,7 @@ public:
     void aggiungi(Nemico *enm);
     void rimuovi(Nemico enm);
     void rimuoviDaId(int id);
-    Oggetto getDaId(int id);
+    Nemico getDaId(int id);
 };
 
 #endif

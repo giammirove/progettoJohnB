@@ -45,6 +45,8 @@ public:
     bool getSaltaDestra();
     bool getSaltaSinistra();
 
+    bool toccoLaLava(int map_h);
+
     bool getATerra();
     bool setATerra(bool val);
     bool stoSaltando();
@@ -78,6 +80,7 @@ public:
     int decrementaVita();
     int incrementaVita(int n);
     int incrementaVita();
+    int muori();
 };
 
 #endif

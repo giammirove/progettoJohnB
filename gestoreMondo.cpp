@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include "gestoreMondo.h"
 #include "oggetto.h"
+#include "utility.h"
+#include "nemico.h"
 
 /*
     Costruttore della classe GestoreMondo
@@ -16,6 +18,8 @@ GestoreMondo::GestoreMondo(ConvertiAsciiArt *asciiArt) {
     _max_h = 10;
     _min_h = 2;
     _saltoPlayer = 5;
+    _numeroPiattaforme = 2;
+    _lastXPavimento = 0;
 }
 
 /*
@@ -27,13 +31,16 @@ GestoreMondo::GestoreMondo(ConvertiAsciiArt *asciiArt) {
     saltoPlayer = _saltoPlayer ovvero quanto salta il player (il calcolo approssimativo è dato da Player.getSaltaHeight() / 2 + 1)
     asciiArt = classe che permette di ottenere la figure in base al nome
 */
-GestoreMondo::GestoreMondo (int _w, int map_h, int max_h, int min_h, int saltoPlayer, ConvertiAsciiArt *asciiArt) {
+GestoreMondo::GestoreMondo (int _w, int map_h, int max_h, int min_h, int saltoPlayer, int numeroPiattaforme, int numeroNemici, ConvertiAsciiArt *asciiArt) {
     _width = _w;
     _map_h = map_h;
     _max_h = max_h;
     _min_h = min_h;
     _saltoPlayer = saltoPlayer;
     _asciiArt = asciiArt;
+    _numeroPiattaforme = numeroPiattaforme;
+    _numeroNemici = numeroNemici;
+    _lastXPavimento = 0;
 }
 
 /*
@@ -59,18 +66,45 @@ Oggetto *GestoreMondo::generaOggetto () {
     int rnd_y = -1;
     // verifica che la y abbastanza grande da permettere al player di saltare 
     // e sia abbastanza piccola da non andare oltre le dimensioni della mappa 
-    while(rnd_y < _saltoPlayer*2 || rnd_y > _map_h) {
+    while(rnd_y < _saltoPlayer || rnd_y > _map_h - _min_h) {
         if(_oggettoPrec != NULL)
             // la nuova y si trova l'intervallo [y precedente - saltoPlayer, (y precedente - saltoPlayer) + 2 * saltoPlayer]
-            rnd_y = ((_oggettoPrec->ottieniFigura()-> y - _saltoPlayer) + rand () % (2 * _saltoPlayer));
+            rnd_y = randomNumber((_oggettoPrec->ottieniFigura()-> y - _saltoPlayer), (_oggettoPrec->ottieniFigura()-> y + _saltoPlayer));
         else 
-            rnd_y = _map_h - _saltoPlayer;
+            rnd_y = _map_h - _min_h;
     }
     // ci saranno dei controlli qua per rnd_x e rnd_y
     Oggetto *tmp = new Oggetto(rnd_x, rnd_y, (TipoDiOggetto)rnd, _asciiArt);
     _oggettoPrec = tmp;
 
-    mvprintw(0,0, "%d - %d", rnd_x, rnd_y);
+    mvprintw(0,0, "%d - (%d < %d < %d)", rnd_x, (_saltoPlayer), rnd_y, _map_h - _min_h);
+
+    _lastXPavimento += _width;
 
     return tmp;
+}
+
+/*
+    Genera un numerico sulla piattaforma precedente
+*/
+Nemico *GestoreMondo::generaNemico(Map *mappa){
+
+    int rnd = randomNumber(_numeroPiattaforme, _numeroPiattaforme+1);
+    Nemico *tmp = new Nemico(_oggettoPrec->ottieniFigura()->x, _oggettoPrec->ottieniFigura()->y, (TipoDiOggetto)rnd, _asciiArt, mappa);
+    tmp->muoviFigura(-tmp->getWidth(), -(tmp->getHeight()+1));
+    return tmp;
+}
+
+/*
+    Chiede se deve generare il pavimento
+*/
+bool GestoreMondo::generoPavimento(){
+    return randomNumber(0, 10) != 10;
+}
+
+/*
+    Ottiene la X alla quale far comparire il pavimento
+*/
+int GestoreMondo::getXPavimento(){
+    return _lastXPavimento;
 }

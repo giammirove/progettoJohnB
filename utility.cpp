@@ -1,5 +1,15 @@
 #include <string.h>
+#include <cstdlib>
+#include "time.h"
 #include "utility.h"
+
+/*
+    Genera un numero casuale
+*/
+int randomNumber(int min, int max) {
+    int randNum = rand()%(max-min + 1) + min;
+    return randNum;
+}
 
 /*
     Ritorna una stringa invertita rispetto all'input

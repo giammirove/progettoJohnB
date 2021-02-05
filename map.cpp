@@ -395,7 +395,7 @@ void Map::spostaVistaDestra()
 {
     this->_offset++;
     // aggiungo 5 colonne ovvero _width di gestore mondo
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 30; i++)
     {
         aggiungiColonna(_width);
         _width++;

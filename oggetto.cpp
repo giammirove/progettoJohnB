@@ -115,23 +115,48 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _solido = true;
         break;
     case OS_PIATTAFORMA:
-        aggiungiPuntoAFigura(&_figura, _x, _y, "=");
-        aggiungiPuntoAFigura(&_figura, _x + 1, _y, "=");
-        aggiungiPuntoAFigura(&_figura, _x + 2, _y, "=");
+        for (int i = 0; i < 5; i++)
+        {
+            aggiungiPuntoAFigura(&_figura, _x + i, _y, "=");
+        }
         _clock = 100000;
         _solido = false;
         break;
     case OS_PIATTAFORMA2:
-        aggiungiPuntoAFigura(&_figura, _x, _y, "=");
-        aggiungiPuntoAFigura(&_figura, _x + 1, _y, "=");
-        aggiungiPuntoAFigura(&_figura, _x + 2, _y, "=");
-        aggiungiPuntoAFigura(&_figura, _x + 3, _y, "=");
-        aggiungiPuntoAFigura(&_figura, _x + 4, _y, "=");
+        for (int i = 0; i < 20; i++)
+        {
+            aggiungiPuntoAFigura(&_figura, _x + i, _y, "=");
+        }
         _clock = 100000;
         _solido = false;
         break;
+    case OS_PAVIMENTO:
+        aggiungiPuntoAFigura(&_figura, _x, _y, "-");
+        aggiungiPuntoAFigura(&_figura, _x + 1, _y, "-");
+        aggiungiPuntoAFigura(&_figura, _x + 2, _y, "-");
+        aggiungiPuntoAFigura(&_figura, _x + 3, _y, "-");
+        aggiungiPuntoAFigura(&_figura, _x + 4, _y, "-");
+        aggiungiPuntoAFigura(&_figura, _x + 5, _y, "-");
+        _clock = 100000;
+        _solido = true;
+        break;
     case OS_WINDMILL:
         caricaFigura("WINDMILL", asciiArt);
+        _clock = 100000;
+        _solido = true;
+        break;
+    case OS_NEMICO1:
+        caricaFigura("NEMICO1", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
+    case OS_NEMICO2:
+        caricaFigura("NEMICO2", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
+    default:
+        aggiungiPuntoAFigura(&_figura, _x, _y, "?");
         _clock = 100000;
         _solido = true;
         break;
@@ -214,4 +239,22 @@ void Oggetto::calcWidthAndHeight()
         _width = max_w - min_w;
         _height = max_h - min_h;
     }
+}
+
+/*
+    Muove la figura con incremento in x e y per ogni punto della figura
+    di inc_x e inc_y
+*/
+figura Oggetto::muoviFigura(int inc_x, int inc_y)
+{
+    figura tmp = _figura;
+    figura head = tmp;
+    while (tmp != NULL)
+    {
+        tmp->x += inc_x;
+        tmp->y += inc_y;
+        tmp = tmp->next;
+    }
+    _figura = head;
+    return _figura;
 }
