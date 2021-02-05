@@ -28,5 +28,13 @@ gestoreMovimento.o : gestoreMovimento.cpp gestoreMovimento.h player.h listaOgget
 gestoreMondo.o : gestoreMondo.cpp gestoreMondo.h oggetto.h convertiAsciiArt.h
 	g++ -c gestoreMondo.cpp -lncursesw
 
+listaNemici.o : listaNemici.cpp listaNemici.h 
+	g++ -c -lncursesw
+nemico.o: nemico.cpp nemico.h oggetto.h map.h 
+	g++ -c -lncursesw
+
+weapon.o: weapon.cpp weapon.h oggetto.h map.h
+	g++ -c -lncursesw
+
 clean :
 	rm *.o test
