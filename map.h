@@ -35,6 +35,7 @@ struct riga_t
     int y;
     char c[30];
     int id;
+    bool solido;
     riga_t *next;
 };
 
@@ -45,6 +46,7 @@ struct colonna_t
     int x;
     riga r;
     colonna_t *next;
+    colonna_t *prev;
 };
 
 typedef struct colonna_t *mappa_t;
@@ -63,14 +65,23 @@ public:
     int getHeight();
     int getView();
     int getOffset();
+
     void setPunto(const char c[], int x, int y);
-    void setPunto(const char c[], int x, int y, int id);
+    void setPunto(const char c[], int x, int y, int id, bool solido);
     char *getPunto(int x, int y);
+
     int controllaCollisione(int x, int y);
     int controllaCollisione(figura fig);
     int controllaCollisione(figura fig, int inc_x, int inc_y);
     int controllaCollisionePiattaforme(figura fig);
     int controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y);
+
+    riga datiCollisione(int x, int y);
+    riga datiCollisione(figura fig);
+    riga datiCollisione(figura fig, int inc_x, int inc_y);
+    riga datiCollisionePiattaforme(figura fig);
+    riga datiCollisionePiattaforme(figura fig, int inc_x, int inc_y);
+
     bool dentroMargine(int x, int y);
     bool dentroMargine(figura fig);
     bool dentroMargine(figura fig, int inc_x, int inc_y);

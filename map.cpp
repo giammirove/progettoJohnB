@@ -37,6 +37,7 @@ void Map::initMap()
     {
         aggiungiColonna(i);
     }
+    view_map = map;
 }
 
 /*
@@ -53,6 +54,7 @@ mappa_t Map::getMappa()
 */
 mappa_t Map::calcMappa()
 {
+    /*
     mappa_t m = map;
     int c = 0;
 
@@ -76,6 +78,12 @@ mappa_t Map::calcMappa()
     }
 
     return map;
+    */
+    if (view_map == NULL)
+    {
+        view_map = map;
+    }
+    return view_map;
 }
 
 /*
@@ -155,7 +163,7 @@ void Map::setPunto(const char c[], int x, int y)
     Imposta un punto nella mappa in base alle coordinate x e y, ci associa un particolare id
     guardare commenti della funzione setPunto
 */
-void Map::setPunto(const char c[], int x, int y, int id)
+void Map::setPunto(const char c[], int x, int y, int id, bool solido)
 {
     mappa_t m = this->map;
     bool found = false;
@@ -183,6 +191,11 @@ void Map::setPunto(const char c[], int x, int y, int id)
         {
             strcpy(r->c, c);
             r->id = id;
+            r->solido = solido;
+            if (r->solido)
+            {
+                mvprintw(8, 80, "E SOLIDO %d - %d, id : %d", x, y , id);
+            }
         }
     }
 }
@@ -241,19 +254,21 @@ int Map::controllaCollisione(int x, int y)
             found = true;
         else
             m = m->next;
-        c++;
     }
 
     if (m != NULL)
     {
         found = false;
         riga r = m->r;
+        int t = 0;
         while (r != NULL && found == false)
         {
             if (r->y == y)
                 found = true;
             else
+            {
                 r = r->next;
+            }
         }
 
         if (r != NULL)
@@ -268,6 +283,48 @@ int Map::controllaCollisione(int x, int y)
 }
 
 /*
+    Controlla se alle coordinata x e y è presente un punto
+*/
+riga Map::datiCollisione(int x, int y)
+{
+    mappa_t m = getMappa();
+    bool found = false;
+    int c = 0; // controlla le collisioni solo in mappa visibile altrimenti non ha senso
+    while (m != NULL && found == false && c < (_view))
+    {
+        if (m->x == x + _offset)
+            found = true;
+        else
+            m = m->next;
+    }
+
+    if (m != NULL)
+    {
+        found = false;
+        riga r = m->r;
+        int t = 0;
+        while (r != NULL && found == false)
+        {
+            if (r->y == y)
+                found = true;
+            else
+            {
+                r = r->next;
+            }
+        }
+
+        if (r != NULL)
+            return r;
+        else
+            return NULL;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+/*
     Controlla se almeno un punto della figura ha una collisione, ovvero
     se almeno un punto della figura si trova in una posizione già occupata
     in mappa
@@ -275,6 +332,16 @@ int Map::controllaCollisione(int x, int y)
 int Map::controllaCollisione(figura fig)
 {
     return controllaCollisione(fig, 0, 0);
+}
+
+/*
+    Controlla se almeno un punto della figura ha una collisione, ovvero
+    se almeno un punto della figura si trova in una posizione già occupata
+    in mappa
+*/
+riga Map::datiCollisione(figura fig)
+{
+    return datiCollisione(fig, 0, 0);
 }
 
 /*
@@ -308,12 +375,51 @@ int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
 }
 
 /*
+    Controlla se almeno un punto della figura ha una collisione, ovvero
+    se almeno un punto della figura si trova in una posizione già occupata
+    in mappa
+    inc_x = indica di quanto incrementare il valore x di ogni punto della figura,
+            utile per verificare se la prossima posizione dopo un movimento è disponibile
+    inc_y = indica di quanto incrementare il valore y di ogni punto della figura,
+            utile per verificare se la prossima posizione dopo un movimento è disponibile
+*/
+riga Map::datiCollisione(figura fig, int inc_x, int inc_y)
+{
+    bool found = false;
+    riga res = NULL;
+    while (fig != NULL && found == false)
+    {
+        riga col = datiCollisione(fig->x + inc_x, fig->y + inc_y);
+        if (col != NULL)
+        {
+            found = true;
+            res = col;
+        }
+        else
+        {
+            fig = fig->next;
+        }
+    }
+
+    return res;
+}
+
+/*
     Controlla se posso effettuare un movimento su una piattaforma
     in realtà non cambia niente mi sa, da rimuovere
 */
 int Map::controllaCollisionePiattaforme(figura fig)
 {
     return controllaCollisionePiattaforme(fig, 0, 0);
+}
+
+/*
+    Controlla se posso effettuare un movimento su una piattaforma
+    in realtà non cambia niente mi sa, da rimuovere
+*/
+riga Map::datiCollisionePiattaforme(figura fig)
+{
+    return datiCollisionePiattaforme(fig, 0, 0);
 }
 
 int Map::controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y)
@@ -359,6 +465,49 @@ int Map::controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y)
     return res;
 }
 
+riga Map::datiCollisionePiattaforme(figura fig, int inc_x, int inc_y)
+{
+    if (fig == NULL)
+    {
+        return NULL;
+    }
+    figura _tmp = fig;
+    int max = _tmp->y;
+    riga res = NULL;
+    bool found = false;
+    while (_tmp != NULL)
+    {
+        if (_tmp->y > max)
+        {
+            max = _tmp->y;
+        }
+        _tmp = _tmp->next;
+    }
+
+    while (fig != NULL && found == false)
+    {
+        if (fig->y == max)
+        {
+            riga col = datiCollisione(fig->x + inc_x, fig->y + inc_y);
+            if (col != NULL)
+            {
+                found = true;
+                res = col;
+            }
+            else
+            {
+                fig = fig->next;
+            }
+        }
+        else
+        {
+            fig = fig->next;
+        }
+    }
+
+    return res;
+}
+
 /*
     Aggiunge un oggetto alla mappa, ovvero aggiunge ogni punto della figura
     dell'oggetto alla mappa con relativo id
@@ -371,12 +520,11 @@ void Map::aggiungiOggetto(Oggetto *obj)
         while (fig != NULL)
         {
             if (strlen(fig->c) > 0)
-                setPunto(fig->c, fig->x, fig->y, obj->getId());
+                setPunto(fig->c, fig->x, fig->y, obj->getId(), obj->getSolido());
             fig = fig->next;
         }
     }
 }
-
 
 /*
     Rimuove un oggetto dalla mappa, ovvero resetta ogni punto della figura
@@ -390,12 +538,11 @@ void Map::rimuoviOggetto(Oggetto *obj)
         while (fig != NULL)
         {
             if (strlen(fig->c) > 0)
-                setPunto("", fig->x, fig->y, -1);
+                setPunto("", fig->x, fig->y, -1, false);
             fig = fig->next;
         }
     }
 }
-
 
 /*
     sposta la vista destra, quindi incrementa l'offset di 1
@@ -410,7 +557,7 @@ void Map::spostaVistaDestra()
         aggiungiColonna(_width);
         _width++;
     }
-    view_map = calcMappa();
+    view_map = view_map->prev;
 }
 
 /*
@@ -438,7 +585,9 @@ void Map::spostaVistaSinistra()
     this->_offset--;
     if (this->_offset < 0)
         this->_offset = 0;
-    view_map = calcMappa();
+    //view_map = calcMappa();
+    else 
+    view_map = view_map->next;
 }
 
 /*
@@ -468,6 +617,7 @@ void Map::aggiungiRiga(riga *r, int y)
     t->y = y;
     strcpy(t->c, "");
     t->id = -1;
+    t->solido = false;
     t->next = *r;
     *r = t;
 }
@@ -483,6 +633,8 @@ void Map::creaColonna(int x)
     m->x = x;
     m->r = NULL;
     m->next = map;
+    m->prev = NULL;
+    map->prev = m;
     map = m;
 }
 

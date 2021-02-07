@@ -24,12 +24,15 @@ namespace GestoreMovimento
             // val = 1 -> destra
             // verifico le collisioni del player rispetto alla sua x incrementata di val
             // id_coll è uguale all'id dell'entità con cui il player collide
+            riga coll = map->datiCollisione(fig, val, 0);
             int id_coll = map->controllaCollisione(fig, val, 0);
             // se il player si trova all'interno del margine verifico le collisioni
             if ((map->dentroMargine(fig, val, 0)))
             {
                 // se id_coll != -1 (ovvero collide) allora solido è determinato dall'oggetto
                 // con cui collido, altrimenti non mi interessa e solido è false di default
+                if(id_coll != -1)
+                if(listaObj->getDaId(id_coll)->getSolido() != coll->solido) mvprintw(7, 80, "DIVERSO %d - %d", id_coll, coll->solido);
                 bool solido = (id_coll != -1) ? listaObj->getDaId(id_coll)->getSolido() : solido = false;
                 if (id_coll == -1 || (id_coll != -1 && solido == false))
                 {

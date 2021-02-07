@@ -1,10 +1,13 @@
-test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o
-	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o -lncursesw
+test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o
+	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o -lncursesw
 
-main.o : main.cpp map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h
+main.o : main.cpp map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h gioco.h
 	g++ -c main.cpp -lncursesw
 
-convertiAsciiArt : convertiAsciiArt.cpp convertiAsciiArt.h utility.h
+gioco.o : gioco.cpp gioco.h map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h
+	g++ -c gioco.cpp -lncursesw
+
+convertiAsciiArt.o : convertiAsciiArt.cpp convertiAsciiArt.h utility.h
 	g++ -c convertiAsciiArt.cpp -lncursesw
 
 map.o : map.cpp map.h oggetto.h

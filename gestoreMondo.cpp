@@ -103,7 +103,8 @@ Nemico *GestoreMondo::generaNemico(){
     Chiede se deve generare il pavimento
 */
 bool GestoreMondo::generoPavimento(){
-    return randomNumber(0, 10) != 10;
+    if(_lastXPavimento == 0) return true;
+    return randomNumber(0, 10) % 4 != 0;
 }
 
 /*

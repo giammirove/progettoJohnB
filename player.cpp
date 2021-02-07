@@ -212,7 +212,7 @@ bool Player::toccoLaLava(int map_h)
     }
     if (f != NULL)
     {
-        if (f->y == map_h - 1)
+        if (f->y == map_h -1)
             return true;
     }
     return false;
