@@ -10,7 +10,7 @@ convertiAsciiArt : convertiAsciiArt.cpp convertiAsciiArt.h utility.h
 map.o : map.cpp map.h oggetto.h
 	g++ -c map.cpp -lncursesw
 
-player.o : player.cpp player.h oggetto.h
+player.o : player.cpp player.h oggetto.h convertiAsciiArt.h weapon.h
 	g++ -c player.cpp -lncursesw
 
 listaOggetto.o : listaOggetto.cpp listaOggetto.h oggetto.h
@@ -34,7 +34,7 @@ listaNemici.o : listaNemici.cpp listaNemici.h
 nemico.o: nemico.cpp nemico.h oggetto.h map.h 
 	g++ -c nemico.cpp -lncursesw
 
-weapon.o: weapon.cpp weapon.h oggetto.h map.h
+weapon.o: weapon.cpp weapon.h oggetto.h map.h utility.h
 	g++ -c weapon.cpp -lncursesw
 
 clean :

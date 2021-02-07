@@ -3,6 +3,8 @@
 
 #include <string.h>
 #include "oggetto.h"
+#include "convertiAsciiArt.h"
+#include "weapon.h"
 
 class Player
 {
@@ -14,7 +16,7 @@ private:
     int _x;
     int _y;
     int _width;
-    int _heigth;
+    int _height;
     int _view;
     int _clock;
     int _saltaHeight;
@@ -23,9 +25,13 @@ private:
     bool _saltaSinistra;
     bool _gravita;
     bool _aterra;
+    bool _direzione; // true se a sinistra, false se a destra
     figura _figura;
+    Weapon *_arma;
+    bool _armaAttiva;
 
     void aggiornaFigura(int inc_x, int inc_y);
+    void calcolaPosizioneArma(int *pos_x, int *pos_y);
 
 public:
     Player(int x, int y, int view, int saltaHeight);
@@ -44,6 +50,7 @@ public:
     int getSaltaInt();
     bool getSaltaDestra();
     bool getSaltaSinistra();
+    bool getDirezione();
 
     bool toccoLaLava(int map_h);
 
@@ -55,13 +62,16 @@ public:
 
     figura getFigura();
     void setFigura(figura fig);
+    void calcWidthAndHeight();
+
+    Weapon *getArma();
+    void setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt);
+    bool cambiaArmaAttiva();
+    bool getArmaAttiva();
 
     void vaiADestra();
-
     void vaiASinistra();
-
     void vaiInAlto();
-
     void vaiInBasso();
 
     void salta();

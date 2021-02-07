@@ -30,18 +30,18 @@ int ListaNemici::getSize() {
 /*
     Aggiunge un Nemico alla lista degli oggetti
 */
-void ListaNemici::aggiungi(Nemico *enm)
+void ListaNemici::aggiungi(Nemico *nem)
 {
     if (_lista == NULL)
     {
         _lista = new listaNemico_t;
-        _lista->enm = enm;
+        _lista->nem = nem;
         _lista->next = NULL;
     }
     else
     {
         listaNemico t = new listaNemico_t;
-        (t)->enm = enm;
+        (t)->nem = nem;
         (t)->next = _lista;
         _lista = t;
     }
@@ -64,7 +64,7 @@ void ListaNemici::rimuoviDaId(int id)
 
     if (t != NULL)
     {
-        if (t->enm->getId() == id)
+        if (t->nem->getId() == id)
         {
             _lista = t->next;
             delete t;
@@ -75,7 +75,7 @@ void ListaNemici::rimuoviDaId(int id)
     listaNemico prev = NULL;
     while (t != NULL && rimosso == false)
     {
-        if (t->enm->getId() == id)
+        if (t->nem->getId() == id)
         {
             listaNemico n = t;
             if (prev != NULL)
@@ -96,14 +96,14 @@ void ListaNemici::rimuoviDaId(int id)
 /*
     Ottiene un Nemico in base al suo id
 */
-Nemico ListaNemici::getDaId(int id)
+Nemico *ListaNemici::getDaId(int id)
 {
     listaNemico t = _lista;
     while (t != NULL)
     {
-        if (t->enm->getId() == id)
+        if (t->nem->getId() == id)
         {
-            return *(t->enm);
+            return (t->nem);
         }
         else
         {
@@ -111,5 +111,12 @@ Nemico ListaNemici::getDaId(int id)
         }
     }
 
-    return *(_lista->enm);
+    return NULL;
+}
+
+/*
+    Ottieni lista dei nemici
+*/
+listaNemico ListaNemici::getListaNemico() {
+    return _lista;
 }

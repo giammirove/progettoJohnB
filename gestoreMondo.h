@@ -26,7 +26,7 @@ class GestoreMondo {
         GestoreMondo (ConvertiAsciiArt *asciiArt);
         GestoreMondo (int _w, int map_h, int max_h, int min_h, int saltoPlayer,  int numeroPiattaforme, int numeroNemici, ConvertiAsciiArt *asciiArt);
         Oggetto *generaOggetto ();
-        Nemico *generaNemico(Map *mappa);
+        Nemico *generaNemico();
         bool generoPavimento();
         int getXPavimento();
 };

@@ -74,14 +74,16 @@ public:
     bool dentroMargine(int x, int y);
     bool dentroMargine(figura fig);
     bool dentroMargine(figura fig, int inc_x, int inc_y);
+    bool nemicoDentroMargine(figura fig);
+    bool nemicoDentroMargine(figura fig, int inc_x, int inc_y);
 
     void spostaVistaDestra();
     bool possoSpostareVistaDestra(ListaOggetto *listaObj, figura fig, int view);
     void spostaVistaSinistra();
     bool possoSpostareVistaSinistra(ListaOggetto *listaObj, figura fig, int view);
 
-    void aggiungiOggetto(Oggetto obj);
-    void rimuoviOggetto(Oggetto obj);
+    void aggiungiOggetto(Oggetto *obj);
+    void rimuoviOggetto(Oggetto *obj);
 
 private:
     int _view; // indica la dimensione della vista

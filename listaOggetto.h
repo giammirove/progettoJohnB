@@ -24,7 +24,7 @@ public:
     void aggiungi(Oggetto *obj);
     void rimuovi(Oggetto obj);
     void rimuoviDaId(int id);
-    Oggetto getDaId(int id);
+    Oggetto *getDaId(int id);
 };
 
 #endif

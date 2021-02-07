@@ -2,6 +2,7 @@
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
+#include <typeinfo>
 #include "time.h"
 #include <fstream>
 #include <iostream>
@@ -17,11 +18,13 @@
 
 using namespace std;
 
-const int SCREEN_CLOCK = 100000000;
-const int INPUT_CLOCK = 2000000;
+const int SCREEN_CLOCK = 100000;
+const int INPUT_CLOCK = 20000;
+const int NEMICI_CLOCK = 1000;
+const int MAX_CLOCK_NEMICI = 2000;
 
 const int IDLE_TIME = 5000;
-const int MAX_SEC = 20000;
+const int MAX_SEC = 2000;
 
 const int NUM_PIATTAFORME = 10;
 const int NUM_NEMICI = 10;
@@ -36,16 +39,18 @@ const int MOV_LATERALE_IN_ARIA = 2;
 */
 void aggiungiOggetto(Map *map, ListaOggetto *listaObj, Oggetto *obj)
 {
-    map->aggiungiOggetto(*obj);
+    map->aggiungiOggetto(obj);
     listaObj->aggiungi(obj);
 }
 
 /*
     Aggiungi un nemico alla lista degli oggetti e alla mappa
 */
-void aggiungiNemico(Map *map, ListaNemici *listaNem, Nemico *nem){
-    map->aggiungiOggetto(*nem);
+void aggiungiNemico(Map *map, ListaOggetto *listaObj, ListaNemici *listaNem, Nemico *nem)
+{
+    map->aggiungiOggetto(nem);
     listaNem->aggiungi(nem);
+    listaObj->aggiungi(nem);
 }
 
 /*
@@ -59,8 +64,42 @@ void aggiungiBloccoAlMondo(Map *map, Player *player, ListaOggetto *listaObj, Lis
     aggiungiOggetto(map, listaObj, tmp);
     if ((player->getX() + map->getOffset()) % 7 == 0)
         player->incrementaScore();
-    Nemico *nem = gestoreMondo->generaNemico(map);
-    aggiungiNemico(map, listaNem, nem);
+}
+
+/*
+    Gestisci la collisione del player con i nemici e con le armi
+*/
+void gestioneCollisioneNemiciEArmi(Map *map, Player *player, ListaOggetto *listaObj, ListaNemici *listaNem)
+{
+    if (player->getArmaAttiva())
+    {
+        int id_coll = map->controllaCollisione(player->getArma()->getFigura());
+        if (id_coll != -1)
+        {
+            if (listaNem->getDaId(id_coll) != NULL)
+            {
+                mvprintw(4, 100, "NEMICO TOCCATO %d", id_coll);
+                // Elimina il nemico
+                map->rimuoviOggetto(listaNem->getDaId(id_coll));
+                listaObj->rimuoviDaId(id_coll);
+                listaNem->rimuoviDaId(id_coll);
+            }
+        }
+    }
+
+    int id_coll = map->controllaCollisione(player->getFigura());
+    if (id_coll != -1)
+    {
+        Nemico *nem = listaNem->getDaId(id_coll);
+        if (nem != NULL)
+        {
+            player->decrementaVita(nem->getAttacco());
+            // Elimina il nemico
+            map->rimuoviOggetto(listaNem->getDaId(id_coll));
+            listaObj->rimuoviDaId(id_coll);
+            listaNem->rimuoviDaId(id_coll);
+        }
+    }
 }
 
 /*
@@ -111,6 +150,15 @@ void disegnaPlayer(WINDOW *win, Player player)
         mvwprintw(win, fig->y + 1, fig->x + 1, fig->c);
         fig = fig->next;
     }
+    if (player.getArmaAttiva())
+    {
+        figura arma = player.getArma()->getFigura();
+        while (arma != NULL)
+        {
+            mvwprintw(win, arma->y + 1, arma->x + 1, arma->c);
+            arma = arma->next;
+        }
+    }
 }
 
 /*
@@ -121,6 +169,33 @@ void disegnaLava(WINDOW *win)
     for (int i = 0; i < W_WIN; i++)
     {
         mvwaddch(win, H_WIN - 1, i, '~' | COLOR_PAIR(1));
+    }
+}
+
+/*
+    Gestisce i nemici
+*/
+void gestioneNemici(int sec, bool *aggiorna, Map *map, Player *player, ListaOggetto *listaObj, ListaNemici *listaNem)
+{
+    gestioneCollisioneNemiciEArmi(map, player, listaObj, listaNem);
+    if (sec % NEMICI_CLOCK == 0)
+    {
+        listaNemico lista = listaNem->getListaNemico();
+        while (lista != NULL)
+        {
+            // Verifico se il nemico è nella schermata del player
+            if (map->nemicoDentroMargine(lista->nem->getFigura()))
+            {
+                map->rimuoviOggetto((lista->nem));
+                lista->nem->muoviNemico(map);
+                map->aggiungiOggetto((lista->nem));
+                *aggiorna = true;
+            }
+            else
+            {
+            }
+            lista = lista->next;
+        }
     }
 }
 
@@ -387,6 +462,20 @@ void elaboraInput(int c, int *prev, Map *map, Player *player, ListaOggetto *list
     {
         player->setFigura(asciiArt->getFigura("FROG"));
     }
+    if (c == 'd')
+    {
+        listaNemico lista = listaNem->getListaNemico();
+        if (map->nemicoDentroMargine(lista->nem->getFigura()))
+        {
+            map->rimuoviOggetto((lista->nem));
+            lista->nem->muoviNemico(map);
+            map->aggiungiOggetto((lista->nem));
+        }
+    }
+    if (c == 'c')
+    {
+        player->cambiaArmaAttiva();
+    }
 
 #pragma endregion
 
@@ -604,6 +693,7 @@ void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna, Map *map, 
             *aggiorna = true;
         }
     }
+
     // Controllo se posso scendere
     else if (sec % player->getClock() == 0 && player->stoScendendo())
     {
@@ -734,6 +824,7 @@ int main()
     ConvertiAsciiArt *asciiArt = new ConvertiAsciiArt(read);
 
     Player *player = new Player(0, 0, 20, 12, asciiArt->getFigura("PG"));
+    player->setArma(OS_ARMA1, asciiArt);
     Map *map = new Map(W_WIN - 2, H_WIN - 2);
 
     GestoreMondo *gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 6, 12, NUM_PIATTAFORME, NUM_NEMICI, asciiArt);
@@ -744,6 +835,11 @@ int main()
     for (int i = 0; i < 15; i++)
     {
         aggiungiBloccoAlMondo(map, player, listaObj, listaNem, asciiArt, gestoreMondo);
+        if (i % 2 == 0)
+        {
+            Nemico *nem = gestoreMondo->generaNemico();
+            aggiungiNemico(map, listaObj, listaNem, nem);
+        }
         map->spostaVistaDestra();
     }
     for (int i = 0; i < 15; i++)
@@ -756,6 +852,7 @@ int main()
     box(debug, 0, 0);
 
     int sec = 0;
+    int nemClock = 0;
     bool aggiorna = false;
     int c = -1;
     int prev = -1;
@@ -782,6 +879,9 @@ int main()
             idle = IDLE_TIME;
         }
 
+        // Gestisce i nemici
+        gestioneNemici(nemClock, &aggiorna, map, player, listaObj, listaNem);
+
         gestioneGravitaESalto(sec, c, &prev, &aggiorna, map, player, listaObj, listaNem, asciiArt, gestoreMondo);
 
         // Gestisco gli input da tastiera
@@ -795,7 +895,9 @@ int main()
         }
 
         if (c != -1)
+        {
             aggiorna = true;
+        }
 
         if (idle == 0)
         {
@@ -819,10 +921,13 @@ int main()
         mvwprintw(debug, 7, 1, "H : %d", player->getSaltaInt());
         mvwprintw(debug, 8, 1, "TERRA : %d", player->getATerra());
         mvwprintw(debug, 9, 1, "SCENDO : %d", player->stoScendendo());
+        mvwprintw(debug, 10, 1, "OFFSET : %d", map->getOffset());
+        mvwprintw(debug, 11, 1, "DIR : %d", player->getArma()->getDirezione());
         wrefresh(debug);
 
         mvprintw(0, 40, "SIZE %d", listaObj->getSize());
         sec++;
+        nemClock++;
         if (idle > 0)
             idle--;
         if (sec % INPUT_CLOCK == 0)
@@ -831,6 +936,8 @@ int main()
         }
         if (sec >= MAX_SEC)
             sec = 0;
+        if (nemClock >= MAX_CLOCK_NEMICI)
+            nemClock = 0;
     }
 
     schermataDiPerdita(win);

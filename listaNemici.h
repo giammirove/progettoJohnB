@@ -6,7 +6,7 @@
 
 struct listaNemico_t
 {
-    Nemico *enm;
+    Nemico *nem;
     listaNemico_t *next;
 };
 typedef struct listaNemico_t *listaNemico;
@@ -21,10 +21,11 @@ public:
 
     int getSize();
 
-    void aggiungi(Nemico *enm);
-    void rimuovi(Nemico enm);
+    void aggiungi(Nemico *nem);
+    void rimuovi(Nemico nem);
     void rimuoviDaId(int id);
-    Nemico getDaId(int id);
+    Nemico *getDaId(int id);
+    listaNemico getListaNemico();
 };
 
 #endif

@@ -5,6 +5,8 @@
 #include <time.h>
 #include <unistd.h>
 #include "player.h"
+#include "weapon.h"
+#include "convertiAsciiArt.h"
 #include "oggetto.h"
 
 using namespace std;
@@ -26,6 +28,7 @@ Player::Player(int x, int y, int view, int saltaHeight)
     _saltaHeight = saltaHeight;
     _score = 0;
     _vita = 3;
+    _armaAttiva = false;
     resettaSalto();
 }
 
@@ -44,23 +47,25 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _saltaHeight = saltaHeight;
     _score = 0;
     _vita = 3;
+    _armaAttiva = false;
     resettaSalto();
 
     setFigura(fig);
 }
 
-
 /*
     Ottiene lo score del player
 */
-int Player::getScore(){
+int Player::getScore()
+{
     return _score;
 }
 
 /*
     Ottiene la vita del player
 */
-int Player::getVita(){
+int Player::getVita()
+{
     return _vita;
 }
 
@@ -93,7 +98,7 @@ int Player::getWidth()
 */
 int Player::getHeight()
 {
-    return _heigth;
+    return _height;
 }
 
 /*
@@ -120,38 +125,43 @@ bool Player::getGravita()
     return _gravita;
 }
 
-
 /*
     Ritorna se il player si trova a terra
 */
-bool Player::getATerra() {
+bool Player::getATerra()
+{
     return _aterra;
 }
 
 /*
     Imposta se il player si trova a terra
 */
-bool Player::setATerra(bool val) {
+bool Player::setATerra(bool val)
+{
     _aterra = val;
     return _aterra;
 }
 
-bool Player::stoSaltando() {
+bool Player::stoSaltando()
+{
     return (getSaltaInt() > (getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2 + _MOV_LATERALE_IN_ARIA);
 }
 
-bool Player::sonoInAriaDuranteIlSalto() {
+bool Player::sonoInAriaDuranteIlSalto()
+{
     return (getSaltaInt() >= ((getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2) && getSaltaInt() <= ((getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2 + _MOV_LATERALE_IN_ARIA));
 }
 
-bool Player::stoScendendo() {
+bool Player::stoScendendo()
+{
     return (getSaltaInt() < ((getSaltaHeight() - _MOV_LATERALE_IN_ARIA) / 2));
 }
 
 /*
     Ritorna la capacità di salto del player
 */
-int Player::getSaltaHeight() {
+int Player::getSaltaHeight()
+{
     return _saltaHeight;
 }
 
@@ -168,27 +178,42 @@ int Player::getSaltaInt()
 /*
     Ritorna se il player sta saltando a destra
 */
-bool Player::getSaltaDestra() {
+bool Player::getSaltaDestra()
+{
     return _saltaDestra;
 }
 
 /*
     Ritorna se il player sta saltando a sinistra
 */
-bool Player::getSaltaSinistra() {
+bool Player::getSaltaSinistra()
+{
     return _saltaSinistra;
+}
+
+/*
+    Ritorna true sse il player guarda a sinistra
+    false sse il player guarda a destra
+*/
+bool Player::getDirezione()
+{
+    return _direzione;
 }
 
 /*
     Verifica se sta toccando la lava
 */
-bool Player::toccoLaLava(int map_h){
+bool Player::toccoLaLava(int map_h)
+{
     figura f = _figura;
-    while (f->next != NULL) {
+    while (f->next != NULL)
+    {
         f = f->next;
     }
-    if (f != NULL) {
-        if(f->y == map_h-1) return true;
+    if (f != NULL)
+    {
+        if (f->y == map_h - 1)
+            return true;
     }
     return false;
 }
@@ -211,23 +236,109 @@ void Player::setFigura(figura fig)
         // elimino la figura precedente
         if (_figura != NULL)
             delete _figura;
-        _width = 0;
-        _heigth = 0;
         _figura = NULL;
         figura t = fig;
         while (t != NULL)
         {
-            // permette di calcolare la lunghezza
-            if (_width < t->x)
-                _width = t->x;
-            // permette di calcolare l'altezza
-            if (_heigth < t->y)
-                _heigth = t->y;
             // viene aggiunto punto per punto alla figura del player
             aggiungiPuntoAFigura(&_figura, t->x + _x, t->y + _y, t->c);
             t = t->next;
         }
     }
+    calcWidthAndHeight();
+}
+
+/*
+    Calcola la dimensione della figura, sia lunghezza che larghezza 
+    e salva i risultati rispettivamente nelle variabili 
+    _width e _height
+
+    Spiegazione algoritmo :
+    si salva inizialmente la minima x e la minima y
+    e la massima x e la massima y
+    controlla ogni punto della figura e verifica se 
+    i minimi/massimi attuali sono da aggiornare
+    la lunghezza calcolata sarà la differenza tra 
+    il massimo x e il minimo x
+    la altezza calcolata sarà la differenza tra 
+    il massimo y e il minimo y
+*/
+void Player::calcWidthAndHeight()
+{
+    if (_figura != NULL)
+    {
+        int min_w = 1;
+        int max_w = _figura->x - _x;
+        int min_h = 1;
+        int max_h = _figura->y - _y;
+        figura tmp = _figura;
+        while (tmp != NULL)
+        {
+            if (tmp->x - _x > max_w)
+            {
+                max_w = tmp->x - _x;
+            }
+            if (tmp->x - _x < min_w)
+            {
+                min_w = tmp->x - _x;
+            }
+            if (tmp->y - _y > max_h)
+            {
+                max_h = tmp->y - _y;
+            }
+            if (tmp->y - _y < min_h)
+            {
+                min_h = tmp->y - _y;
+            }
+
+            tmp = tmp->next;
+        }
+
+        _width = abs(max_w);
+        _height = abs(max_h);
+    }
+}
+
+/*
+    Ritorna l'oggetto arma del player
+*/
+Weapon *Player::getArma(){
+    return _arma;
+}
+
+/*
+    Imposta l'arma del player
+*/
+void Player::setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt) {
+    int arma_x = 0;
+    int arma_y = 0;
+    calcolaPosizioneArma(&arma_x, &arma_y);
+    _arma = new Weapon(0, 0, tipoArma, asciiArt);
+    // sto guardando a sinistra
+    if(_direzione == true)
+    {
+        _arma->muoviFigura(arma_x - _arma->getWidth(), arma_y);
+    }
+    // sto andando a destra
+    else 
+    {
+        _arma->muoviFigura(arma_x, arma_y);
+    }
+}
+
+/*
+    Cambia lo stato di visibilità dell'arma
+*/ 
+bool Player::cambiaArmaAttiva(){
+    _armaAttiva = !_armaAttiva;
+    return _armaAttiva;
+}
+
+/*
+    Ritorna lo stato di visibilità dell'arma
+*/
+bool Player::getArmaAttiva(){
+    return _armaAttiva;
 }
 
 /*
@@ -236,6 +347,7 @@ void Player::setFigura(figura fig)
 void Player::vaiADestra()
 {
     _x++;
+    _direzione = false;
     aggiornaFigura(1, 0);
 }
 
@@ -245,6 +357,7 @@ void Player::vaiADestra()
 void Player::vaiASinistra()
 {
     _x--;
+    _direzione = true;
     aggiornaFigura(-1, 0);
 }
 
@@ -284,7 +397,8 @@ void Player::decrementaSalto()
 {
     if (_saltaInt > 0)
         _saltaInt--;
-    else {
+    else
+    {
         resettaSaltoDestraSinistra();
     }
 }
@@ -293,7 +407,8 @@ void Player::decrementaSalto()
     Ho terminato di saltare quindi saltaInt = 0
     e resetto i flag
 */
-void Player::resettaSalto() {
+void Player::resettaSalto()
+{
     _saltaInt = 0;
     resettaSaltoDestraSinistra();
 }
@@ -301,14 +416,16 @@ void Player::resettaSalto() {
 /*
     Imposto che il player sta saltando a destra
 */
-void Player::saltaDestra () {
+void Player::saltaDestra()
+{
     _saltaDestra = true;
 }
 
 /*
     Imposto che il player sta saltando a sinistra
 */
-void Player::saltaSinistra () {
+void Player::saltaSinistra()
+{
     _saltaSinistra = true;
 }
 
@@ -316,9 +433,93 @@ void Player::saltaSinistra () {
     Resetto i flag che avvertono se il player sta saltando
     a destra o a sinistra
 */
-void Player::resettaSaltoDestraSinistra(){
+void Player::resettaSaltoDestraSinistra()
+{
     _saltaSinistra = false;
     _saltaDestra = false;
+}
+
+/*
+    Decrementa la vita del player di n
+*/
+int Player::decrementaVita(int n)
+{
+    _vita -= n;
+    if (_vita < 0)
+        _vita = 0;
+    return _vita;
+}
+
+/*
+    Decrementa la vita del player di 1
+*/
+int Player::decrementaVita()
+{
+    return decrementaVita(1);
+}
+
+/*
+    Incrementa la vita del player di n 
+*/
+int Player::incrementaVita(int n)
+{
+    _vita += n;
+    if (_vita > _MAX_VITA)
+        _vita = _MAX_VITA;
+    return _vita;
+}
+
+/*
+    Incrementa la vita del player di 1
+*/
+int Player::incrementaVita()
+{
+    return incrementaVita(1);
+}
+
+/*
+    Decrementa lo score del player di n
+*/
+int Player::decrementaScore(int n)
+{
+    _score -= n;
+    if (_score < 0)
+        _score = 0;
+    return _score;
+}
+
+/*
+    Decrementa lo score del player di 1
+*/
+int Player::decrementaScore()
+{
+    return decrementaScore(1);
+}
+
+/*
+    Incrementa lo score del player di n 
+*/
+int Player::incrementaScore(int n)
+{
+    _score += n;
+    return _score;
+}
+
+/*
+    Incrementa lo score del player di 1
+*/
+int Player::incrementaScore()
+{
+    return incrementaScore(1);
+}
+
+/*
+    Muore all'istante
+*/
+int Player::muori()
+{
+    _vita = 0;
+    return _vita;
 }
 
 // PRIVATE
@@ -336,75 +537,65 @@ void Player::aggiornaFigura(int inc_x, int inc_y)
         t->y = t->y + inc_y;
         t = t->next;
     }
+
+    // se la direzione precedente è diversa aggiorno l'immagine
+    if(_direzione != _arma->getDirezione()) {
+        _arma->setDirezione(_direzione);
+        if(_direzione)
+            _arma->muoviFigura(-(_width*2), 0);
+        else 
+            _arma->muoviFigura((_width*2), 0);
+        mvprintw(3, 100, "WIDTH %d", _width);
+    }
+    _arma->muoviFigura(inc_x, inc_y); 
+    mvprintw(2, 100, "%d", _arma->getFigura()->x);
 }
 
 /*
-    Decrementa la vita del player di n
+    Calcola la posizione dell'arma rispetto al player
 */
-int Player::decrementaVita(int n) {
-    _vita -= n;
-        if (_vita < 0) _vita = 0;
-    return _vita;
-}
+void Player::calcolaPosizioneArma(int *pos_x, int *pos_y)
+{
+    *pos_x = _figura->x;
+    *pos_y = _figura->y;
+    figura _tmp = _figura;
+    if (_tmp != NULL)
+    {
+        int max_x = _tmp->x;
+        int min_x = _tmp->x;
+        int max_y = _tmp->y;
+        int min_y = _tmp->y;
+        while (_tmp != NULL)
+        {
+            if (_tmp->x > max_x)
+            {
+                max_x = _tmp->x;
+            }
+            if (_tmp->x < min_x)
+            {
+                min_x = _tmp->x;
+            }
+            if (_tmp->y > max_y)
+            {
+                max_y = _tmp->y;
+            }
+            if (_tmp->y < min_y)
+            {
+                min_y = _tmp->y;
+            }
+            _tmp = _tmp->next;
+        }
 
-/*
-    Decrementa la vita del player di 1
-*/
-int Player::decrementaVita() {
-    return decrementaVita(1);
-}
+        int media_y = (int)((max_y+min_y)/2);
+        *pos_y = media_y;
 
-/*
-    Incrementa la vita del player di n 
-*/
-int Player::incrementaVita(int n) {
-    _vita += n;
-    if (_vita > _MAX_VITA) _vita = _MAX_VITA;
-    return _vita;
-}
-
-/*
-    Incrementa la vita del player di 1
-*/
-int Player::incrementaVita() {
-    return incrementaVita(1);
-}
-
-/*
-    Decrementa lo score del player di n
-*/
-int Player::decrementaScore(int n) {
-    _score -= n;
-        if (_score < 0) _score = 0;
-    return _score;
-}
-
-/*
-    Decrementa lo score del player di 1
-*/
-int Player::decrementaScore() {
-    return decrementaScore(1);
-}
-
-/*
-    Incrementa lo score del player di n 
-*/
-int Player::incrementaScore(int n) {
-    _score += n;
-    return _score;
-}
-
-/*
-    Incrementa lo score del player di 1
-*/
-int Player::incrementaScore() {
-    return incrementaScore(1);
-}
-
-/*
-    Muore all'istante
-*/
-int Player::muori(){
-    _vita = 0;
-    return _vita;
+        // sto guardando a sinistra
+        if(_direzione == true) {
+            *pos_x = min_x - 1;
+        }
+        // sto guardando a destra
+        else {
+            *pos_x = max_x + 1;
+        }
+    }
 }

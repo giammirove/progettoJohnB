@@ -16,7 +16,8 @@ ListaOggetto::ListaOggetto()
     geSize ritorna la lunghezza totale della lista
     scorrendola per intero
 */
-int ListaOggetto::getSize() {
+int ListaOggetto::getSize()
+{
     int s = 0;
     listaObj t = _lista;
     while (t != NULL)
@@ -62,6 +63,7 @@ void ListaOggetto::rimuoviDaId(int id)
     listaObj t = _lista;
     bool rimosso = false;
 
+    // verifica la testa
     if (t != NULL)
     {
         if (t->obj->getId() == id)
@@ -75,15 +77,23 @@ void ListaOggetto::rimuoviDaId(int id)
     listaObj prev = NULL;
     while (t != NULL && rimosso == false)
     {
-        if (t->obj->getId() == id)
+        if (t->obj != NULL)
         {
-            listaObj n = t;
-            if (prev != NULL)
-                prev->next = t->next;
+            if (t->obj->getId() == id)
+            {
+                listaObj n = t;
+                if (prev != NULL)
+                    prev->next = t->next;
+                else
+                    t = t->next;
+                delete n;
+                rimosso = true;
+            }
             else
+            {
+                prev = t;
                 t = t->next;
-            delete n;
-            rimosso = true;
+            }
         }
         else
         {
@@ -96,14 +106,14 @@ void ListaOggetto::rimuoviDaId(int id)
 /*
     Ottiene un oggetto in base al suo id
 */
-Oggetto ListaOggetto::getDaId(int id)
+Oggetto *ListaOggetto::getDaId(int id)
 {
     listaObj t = _lista;
     while (t != NULL)
     {
         if (t->obj->getId() == id)
         {
-            return *(t->obj);
+            return (t->obj);
         }
         else
         {
@@ -111,5 +121,5 @@ Oggetto ListaOggetto::getDaId(int id)
         }
     }
 
-    return *(_lista->obj);
+    return NULL;
 }

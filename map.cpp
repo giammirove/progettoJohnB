@@ -43,7 +43,8 @@ void Map::initMap()
     GetMappa ritorna la mappa che attualmente il player sta guardando
     ovvero scelta in base all'offset
 */
-mappa_t Map::getMappa(){
+mappa_t Map::getMappa()
+{
     return view_map;
 }
 
@@ -80,7 +81,8 @@ mappa_t Map::calcMappa()
 /*
     Ottiene la mappa completa
 */
-mappa_t Map::getMappaCompleta(){
+mappa_t Map::getMappaCompleta()
+{
     return map;
 }
 /*
@@ -308,7 +310,7 @@ int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
 /*
     Controlla se posso effettuare un movimento su una piattaforma
     in realtà non cambia niente mi sa, da rimuovere
-*/ 
+*/
 int Map::controllaCollisionePiattaforme(figura fig)
 {
     return controllaCollisionePiattaforme(fig, 0, 0);
@@ -361,31 +363,39 @@ int Map::controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y)
     Aggiunge un oggetto alla mappa, ovvero aggiunge ogni punto della figura
     dell'oggetto alla mappa con relativo id
 */
-void Map::aggiungiOggetto(Oggetto obj)
+void Map::aggiungiOggetto(Oggetto *obj)
 {
-    figura fig = obj.ottieniFigura();
-    while (fig != NULL)
+    if (obj != NULL)
     {
-        if (strlen(fig->c) > 0)
-            setPunto(fig->c, fig->x, fig->y, obj.getId());
-        fig = fig->next;
+        figura fig = obj->getFigura();
+        while (fig != NULL)
+        {
+            if (strlen(fig->c) > 0)
+                setPunto(fig->c, fig->x, fig->y, obj->getId());
+            fig = fig->next;
+        }
     }
 }
+
 
 /*
     Rimuove un oggetto dalla mappa, ovvero resetta ogni punto della figura
     dell'oggetto nella mappa
 */
-void Map::rimuoviOggetto(Oggetto obj)
+void Map::rimuoviOggetto(Oggetto *obj)
 {
-    figura fig = obj.ottieniFigura();
-    while (fig != NULL)
+    if (obj != NULL)
     {
-        if (strlen(fig->c) > 0)
-            setPunto("", fig->x, fig->y, -1);
-        fig = fig->next;
+        figura fig = obj->getFigura();
+        while (fig != NULL)
+        {
+            if (strlen(fig->c) > 0)
+                setPunto("", fig->x, fig->y, -1);
+            fig = fig->next;
+        }
     }
 }
+
 
 /*
     sposta la vista destra, quindi incrementa l'offset di 1
@@ -414,7 +424,8 @@ bool Map::possoSpostareVistaDestra(ListaOggetto *listaObj, figura fig, int view)
 {
     int id_coll = controllaCollisione(fig, 1, 0);
     bool solid = true;
-    if(id_coll != -1) solid = listaObj->getDaId(id_coll).getSolido();
+    if (id_coll != -1)
+        solid = listaObj->getDaId(id_coll)->getSolido();
     return ((id_coll == -1 || solid == false) && !dentroMargine(fig, view, 0));
 }
 
@@ -439,7 +450,8 @@ bool Map::possoSpostareVistaSinistra(ListaOggetto *listaObj, figura fig, int vie
 {
     int id_coll = controllaCollisione(fig, -1, 0);
     bool solid = true;
-    if(id_coll != -1) solid = listaObj->getDaId(id_coll).getSolido();
+    if (id_coll != -1)
+        solid = listaObj->getDaId(id_coll)->getSolido();
     return ((id_coll == -1 || solid == false) && !dentroMargine(fig, -view, 0));
 }
 
@@ -520,6 +532,31 @@ bool Map::dentroMargine(figura fig, int inc_x, int inc_y)
     while (fig != NULL && dentro == true)
     {
         dentro = dentroMargine(fig->x + inc_x, fig->y + inc_y);
+        if (dentro == true)
+            fig = fig->next;
+    }
+
+    return dentro;
+}
+
+bool Map::nemicoDentroMargine(figura fig)
+{
+    return nemicoDentroMargine(fig, 0, 0);
+}
+
+/*
+    Verifica se ogni punto della figura incrementato di inc_x e inc_y
+    rispettivamente per x e y, sono interni ai margini della mappa
+*/
+bool Map::nemicoDentroMargine(figura fig, int inc_x, int inc_y)
+{
+    bool dentro = true;
+
+    while (fig != NULL && dentro == true)
+    {
+        bool dentroDestra = fig->x + inc_x <= (_view + _offset);
+        bool dentroSinistra = fig->x + inc_x >= _offset;
+        dentro = dentroSinistra && dentroDestra;
         if (dentro == true)
             fig = fig->next;
     }

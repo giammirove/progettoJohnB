@@ -48,6 +48,9 @@ GestoreMondo::GestoreMondo (int _w, int map_h, int max_h, int min_h, int saltoPl
     generato precedentemente
 */
 Oggetto *GestoreMondo::generaOggetto () {
+
+    _lastXPavimento += _width;
+
     // rnd indica il tipo di oggetto casuale da generare
     // i primi n oggetti dell'enum saranno usato per 
     // questa funzione
@@ -55,7 +58,7 @@ Oggetto *GestoreMondo::generaOggetto () {
     int rnd = rand() % 2;
     int start_x = 0;
     if(_oggettoPrec != NULL)
-        start_x = _oggettoPrec->ottieniFigura()->x;
+        start_x = _oggettoPrec->getFigura()->x;
     else 
         start_x = 4;
     
@@ -69,7 +72,7 @@ Oggetto *GestoreMondo::generaOggetto () {
     while(rnd_y < _saltoPlayer || rnd_y > _map_h - _min_h) {
         if(_oggettoPrec != NULL)
             // la nuova y si trova l'intervallo [y precedente - saltoPlayer, (y precedente - saltoPlayer) + 2 * saltoPlayer]
-            rnd_y = randomNumber((_oggettoPrec->ottieniFigura()-> y - _saltoPlayer), (_oggettoPrec->ottieniFigura()-> y + _saltoPlayer));
+            rnd_y = randomNumber((_oggettoPrec->getFigura()-> y - _saltoPlayer), (_oggettoPrec->getFigura()-> y + _saltoPlayer));
         else 
             rnd_y = _map_h - _min_h;
     }
@@ -79,19 +82,20 @@ Oggetto *GestoreMondo::generaOggetto () {
 
     mvprintw(0,0, "%d - (%d < %d < %d)", rnd_x, (_saltoPlayer), rnd_y, _map_h - _min_h);
 
-    _lastXPavimento += _width;
-
     return tmp;
 }
 
 /*
     Genera un numerico sulla piattaforma precedente
 */
-Nemico *GestoreMondo::generaNemico(Map *mappa){
+Nemico *GestoreMondo::generaNemico(){
 
     int rnd = randomNumber(_numeroPiattaforme, _numeroPiattaforme+1);
-    Nemico *tmp = new Nemico(_oggettoPrec->ottieniFigura()->x, _oggettoPrec->ottieniFigura()->y, (TipoDiOggetto)rnd, _asciiArt, mappa);
-    tmp->muoviFigura(-tmp->getWidth(), -(tmp->getHeight()+1));
+    Nemico *tmp = new Nemico(_oggettoPrec->getFigura()->x, _oggettoPrec->getFigura()->y, (TipoDiOggetto)rnd, _asciiArt);
+    int rnd_x = randomNumber(-(_oggettoPrec->getWidth()), -(tmp->getWidth()));
+    tmp->muoviFigura(rnd_x, -(tmp->getHeight()+1));
+
+    //mvprintw(0, 100, "(%6d - %6d)", _oggettoPrec->getWidth(), tmp->getWidth());
     return tmp;
 }
 

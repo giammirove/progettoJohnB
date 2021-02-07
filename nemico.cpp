@@ -1,11 +1,13 @@
 #include "oggetto.h"
 #include "nemico.h"
+#include "gestoreMovimento.h"
+#include "map.h"
 
-Nemico::Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt, Map *mappa)
+Nemico::Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 	:Oggetto(x, y, tipo, asciiArt)
 {
-	_mappa = mappa;
 	_direction = true;
+	impostaFigura(tipo, asciiArt);
 }
 
 bool Nemico::minore_coppia(int x1, int y1,int x2, int y2)
@@ -39,7 +41,7 @@ bool Nemico::maggiore_coppia(int x1, int y1,int x2, int y2)
 
 int *Nemico::getZampaDestra()
 {
-	figura buff_figura = ottieniFigura();	
+	figura buff_figura = getFigura();	
 	int maxX;
 	int maxY;	
 	int *ret = new int(2);
@@ -54,8 +56,8 @@ int *Nemico::getZampaDestra()
 			buff_figura = buff_figura -> next;
 		}
 	}
-	ret[0] = maxY;
-	ret[1] = maxX;
+	ret[0] = maxX;
+	ret[1] = maxY;
 
 	return ret;
 };
@@ -63,7 +65,7 @@ int *Nemico::getZampaDestra()
 int *Nemico::getZampaSinistra()
 {
 	
-	figura buff_figura = ottieniFigura();	
+	figura buff_figura = getFigura();	
 	int minX;
 	int minY;	
 	int *ret = new int(2);
@@ -78,12 +80,30 @@ int *Nemico::getZampaSinistra()
 			buff_figura = buff_figura -> next;
 		}
 	}
-	ret[0] = minY;
-	ret[1] = minX;
+	ret[0] = minX;
+	ret[1] = minY;
 
 	return ret;
 }
 
+/*
+	Ritorna la vita del nemico
+*/
+int Nemico::getVita(){
+	return _vita;
+}
+
+/*
+	Ritorna il danno del nemico
+*/
+int Nemico::getAttacco() {
+	return _attacco;
+}
+
+/*
+	True sse va a sinistra
+	False sse va a destra
+*/
 bool Nemico::getDirection()
 {
 	return _direction;
@@ -97,7 +117,7 @@ bool Nemico::changeDirection()
 
 void Nemico::vaiASinistra(int numeroPassi)
 {
-	figura buff_figura = ottieniFigura();	
+	figura buff_figura = getFigura();	
 	while(buff_figura != NULL){
 		buff_figura -> x = buff_figura -> x - numeroPassi;
 		buff_figura = buff_figura -> next;
@@ -106,17 +126,18 @@ void Nemico::vaiASinistra(int numeroPassi)
 
 void Nemico::vaiADestra(int numeroPassi)
 {
-	figura buff_figura = ottieniFigura();	
+	figura buff_figura = getFigura();	
 	while(buff_figura != NULL){
 		buff_figura -> x = buff_figura -> x + numeroPassi;
 		buff_figura = buff_figura -> next;
 	}
 }
 
-void Nemico::muoviNemico()
+void Nemico::muoviNemico(Map *mappa)
 {
 	if(getDirection()){//true se sta andando a sinistra
-		if(_mappa->controllaCollisionePiattaforme(ottieniFigura(), -1, 1) == -1){
+		// sottrango l'offset in quanto il nemico è un oggetto in movimento
+		if(mappa->controllaCollisione(getZampaSinistra()[0]-1- mappa->getOffset(), getZampaDestra()[1]+1) != -1){
 			vaiASinistra(1);	
 		}
 		else{
@@ -126,7 +147,8 @@ void Nemico::muoviNemico()
 
 	}
 	else{
-		if(_mappa->controllaCollisionePiattaforme(ottieniFigura(), 1, 1) == -1){
+		// sottrango l'offset in quanto il nemico è un oggetto in movimento
+		if(mappa->controllaCollisione(getZampaDestra()[0]+1 - mappa->getOffset(), getZampaDestra()[1]+1) != -1){
 			vaiADestra(1);	
 		}
 		else{
@@ -153,7 +175,7 @@ void Nemico::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt) {
 
 	case OS_NEMICO2:
 		_vita = 2;
-		_attacco = 1;
+		_attacco = 2;
 	break;
 	
 	default:

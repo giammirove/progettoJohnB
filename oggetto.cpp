@@ -1,6 +1,7 @@
 #include <string.h>
 #include <locale.h>
 #include <ncurses.h>
+#include <math.h>
 #include "oggetto.h"
 #include "convertiAsciiArt.h"
 #include "utility.h"
@@ -91,6 +92,7 @@ TipoDiOggetto Oggetto::getTipoDiOggetto()
 */
 void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 {
+    if (_figura != NULL) delete _figura;
     _figura = new figura_t;
     _tipo = tipo;
 
@@ -115,7 +117,7 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _solido = true;
         break;
     case OS_PIATTAFORMA:
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 10; i++)
         {
             aggiungiPuntoAFigura(&_figura, _x + i, _y, "=");
         }
@@ -141,17 +143,22 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _solido = true;
         break;
     case OS_WINDMILL:
-        caricaFigura("WINDMILL", asciiArt);
+        caricaFigura(&_figura, "WINDMILL", asciiArt);
         _clock = 100000;
         _solido = true;
         break;
     case OS_NEMICO1:
-        caricaFigura("NEMICO1", asciiArt);
+        caricaFigura(&_figura, "NEMICO1", asciiArt);
         _clock = 100000;
         _solido = false;
         break;
     case OS_NEMICO2:
-        caricaFigura("NEMICO2", asciiArt);
+        caricaFigura(&_figura, "NEMICO2", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
+    case OS_ARMA1:
+        caricaFigura(&_figura, "ARMA1_DX", asciiArt);
         _clock = 100000;
         _solido = false;
         break;
@@ -169,23 +176,33 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
     nome = indica il nome della figura all'interno del file "asciiArtDB.txt"
     asciiArt = oggetto che permette di ottenere la figura
 */
-void Oggetto::caricaFigura(char *nome, ConvertiAsciiArt *asciiArt)
+void Oggetto::caricaFigura(figura *fig, char *nome, ConvertiAsciiArt *asciiArt)
 {
-    if (_figura != NULL)
-        delete _figura;
-    _figura = NULL;
+    if (*fig != NULL)
+        delete *fig;
+    *fig = NULL;
     figura t = asciiArt->getFigura(nome);
     while (t != NULL)
     {
-        aggiungiPuntoAFigura(&_figura, t->x + _x, t->y + _y, t->c);
+        aggiungiPuntoAFigura(fig, t->x + _x, t->y + _y, t->c);
         t = t->next;
+    }
+}
+
+void Oggetto::caricaFigura(figura *fig, figura src) {
+    if (*fig != NULL)
+        delete *fig;
+    *fig = NULL;
+    while(src != NULL) {
+        aggiungiPuntoAFigura(fig, src->x + _x, src->y + _y, src->c);
+        src = src->next;
     }
 }
 
 /*
     Ottiene la figura dell'oggeto
 */
-figura Oggetto::ottieniFigura()
+figura Oggetto::getFigura()
 {
     return _figura;
 }
@@ -209,35 +226,35 @@ void Oggetto::calcWidthAndHeight()
 {
     if (_figura != NULL)
     {
-        int min_w = _figura->x;
-        int max_w = _figura->x;
-        int min_h = _figura->y;
-        int max_h = _figura->y;
+        int min_w = 1;
+        int max_w = _figura->x - _x;
+        int min_h = 1;
+        int max_h = _figura->y - _y;
         figura tmp = _figura;
         while (tmp != NULL)
         {
-            if (tmp->x > max_w)
+            if (tmp->x - _x > max_w)
             {
-                max_w = tmp->x;
+                max_w = tmp->x - _x;
             }
-            if (tmp->x < min_w)
+            if (tmp->x - _x < min_w)
             {
-                max_w = tmp->x;
+                min_w = tmp->x - _x;
             }
-            if (tmp->y > max_h)
+            if (tmp->y - _y > max_h)
             {
-                max_h = tmp->y;
+                max_h = tmp->y - _y;
             }
-            if (tmp->y < min_h)
+            if (tmp->y - _y < min_h)
             {
-                max_h = tmp->y;
+                min_h = tmp->y - _y;
             }
 
             tmp = tmp->next;
         }
 
-        _width = max_w - min_w;
-        _height = max_h - min_h;
+        _width = abs(max_w);
+        _height = abs(max_h);
     }
 }
 

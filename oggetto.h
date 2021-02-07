@@ -36,6 +36,9 @@ enum TipoDiOggetto
     OS_NEMICO8,
     OS_NEMICO9,
     OS_NEMICO10,
+    OS_ARMA1,
+    OS_ARMA1_DX,
+    OS_ARMA1_SX,
     OS_ALBERO,
     OS_CESPUGLIO,
     OS_KIRBY,
@@ -55,7 +58,7 @@ public:
     bool getSolido();
     int getWidth();
     int getHeight();
-    figura ottieniFigura();
+    figura getFigura();
     figura muoviFigura(int inc_x, int inc_y);
     TipoDiOggetto getTipoDiOggetto();
 
@@ -69,7 +72,8 @@ protected:
     TipoDiOggetto _tipo;
 
     void impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
-    void caricaFigura(char *nome, ConvertiAsciiArt *asciiArt);
+    void caricaFigura(figura *fig, char *nome, ConvertiAsciiArt *asciiArt);
+    void caricaFigura(figura *fig, figura src);
     void calcWidthAndHeight();
 };
 
