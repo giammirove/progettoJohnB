@@ -90,7 +90,7 @@ Oggetto *GestoreMondo::generaOggetto () {
 */
 Nemico *GestoreMondo::generaNemico(){
 
-    int rnd = randomNumber(_numeroPiattaforme, _numeroPiattaforme+1);
+    int rnd = randomNumber(_numeroPiattaforme, _numeroPiattaforme+3);
     Nemico *tmp = new Nemico(_oggettoPrec->getFigura()->x, _oggettoPrec->getFigura()->y, (TipoDiOggetto)rnd, _asciiArt);
     int rnd_x = randomNumber(-(_oggettoPrec->getWidth()), -(tmp->getWidth()));
     tmp->muoviFigura(rnd_x, -(tmp->getHeight()+1));

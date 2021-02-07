@@ -76,6 +76,8 @@ public:
     int controllaCollisionePiattaforme(figura fig);
     int controllaCollisionePiattaforme(figura fig, int inc_x, int inc_y);
 
+    int controllaBordiCollisione(figura fig);
+
     riga datiCollisione(int x, int y);
     riga datiCollisione(figura fig);
     riga datiCollisione(figura fig, int inc_x, int inc_y);

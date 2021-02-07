@@ -16,6 +16,7 @@ protected:
 	int _vita;
 	int _attacco;
 	bool _direction;
+	bool _statico;
 
 public:
 	Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
@@ -24,7 +25,10 @@ public:
 	int getAttacco();
 	int getVita();
 	bool getDirection();
-	abisso morte();
+	bool getStatico();
+
+	int decrementaVita(int n);
+	int decrementaVita();
 
 	void impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
 

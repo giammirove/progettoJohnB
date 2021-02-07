@@ -11,7 +11,6 @@ class Weapon : public Oggetto
 private:
     int _danno;
     bool _direzione; // true sse sinistra
-    Map *_mappa;
     figura _figuraDx, _figuraSx;
 
 public:

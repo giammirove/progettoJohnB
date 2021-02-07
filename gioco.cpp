@@ -31,7 +31,7 @@ Gioco::Gioco(FILE *read)
 
     listaObj = new ListaOggetto();
     listaNem = new ListaNemici();
-    
+
     // Genera di default prima 15 stutture
     for (int i = 0; i < 15; i++)
     {
@@ -420,7 +420,7 @@ void Gioco::gestioneCollisioneNemiciEArmi()
         {
             if (listaNem->getDaId(id_coll) != NULL)
             {
-                mvprintw(4, 100, "NEMICO TOCCATO %d", id_coll);
+                mvprintw(1, 100, "NEMICO TOCCATO %d", id_coll);
                 // Elimina il nemico
                 map->rimuoviOggetto(listaNem->getDaId(id_coll));
                 listaObj->rimuoviDaId(id_coll);
@@ -429,17 +429,43 @@ void Gioco::gestioneCollisioneNemiciEArmi()
         }
     }
 
-    int id_coll = map->controllaCollisione(player->getFigura());
+    int id_coll = map->controllaBordiCollisione(player->getFigura());
     if (id_coll != -1)
     {
         Nemico *nem = listaNem->getDaId(id_coll);
         if (nem != NULL)
         {
-            player->decrementaVita(nem->getAttacco());
-            // Elimina il nemico
-            map->rimuoviOggetto(listaNem->getDaId(id_coll));
-            listaObj->rimuoviDaId(id_coll);
-            listaNem->rimuoviDaId(id_coll);
+            int coll_dw = map->controllaCollisione(player->getFigura(), 0, 1);
+            // se la collisione verso il basso non è con il nemico
+            if (coll_dw != id_coll || nem->getStatico() == true)
+            {
+                player->decrementaVita(nem->getAttacco());
+                if (nem->getStatico() == false)
+                {
+                    // Elimina il nemico
+                    map->rimuoviOggetto(listaNem->getDaId(id_coll));
+                    listaObj->rimuoviDaId(id_coll);
+                    listaNem->rimuoviDaId(id_coll);
+                }
+            }
+            else
+            {
+                // se collido il nemico verso il basso allora gli sottraggo la vita
+                if (coll_dw == id_coll)
+                {
+                    player->salta();
+                    nem->decrementaVita();
+                    mvprintw(6, 100, "VITA NEM %d", nem->getVita());
+
+                    if (nem->getVita() == 0)
+                    {
+                        // Elimina il nemico
+                        map->rimuoviOggetto(listaNem->getDaId(id_coll));
+                        listaObj->rimuoviDaId(id_coll);
+                        listaNem->rimuoviDaId(id_coll);
+                    }
+                }
+            }
         }
     }
 }
@@ -724,7 +750,7 @@ void Gioco::gestioneNemici(int sec, bool *aggiorna)
     Aggiunge un blocco al mondo
 */
 void Gioco::aggiungiBloccoAlMondo()
-{   
+{
     if (gestoreMondo->generoPavimento())
         aggiungiOggetto(new Oggetto(gestoreMondo->getXPavimento(), map->getHeight() - 2, OS_PAVIMENTO, asciiArt));
     Oggetto *tmp = gestoreMondo->generaOggetto();

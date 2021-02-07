@@ -199,8 +199,8 @@ int main()
     {
         if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
         {
-            //gioco->getPlayer()->muori();
-            //continue;
+            gioco->getPlayer()->muori();
+            continue;
         }
 
         aggiorna = false;

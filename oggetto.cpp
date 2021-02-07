@@ -157,8 +157,23 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _clock = 100000;
         _solido = false;
         break;
+    case OS_PIATTAFORMA_APPUNTITA:
+        caricaFigura(&_figura, "PIATTAFORMA_APPUNTITA", asciiArt);
+        _clock = 100000;
+        _solido = true;
+        break;
+    case OS_RAGNO:
+        caricaFigura(&_figura, "RAGNO", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
     case OS_ARMA1:
         caricaFigura(&_figura, "ARMA1_DX", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
+    case OS_BONUS_VITA:
+        aggiungiPuntoAFigura(&_figura, _x, _y, "\U00002764");
         _clock = 100000;
         _solido = false;
         break;

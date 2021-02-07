@@ -509,6 +509,29 @@ riga Map::datiCollisionePiattaforme(figura fig, int inc_x, int inc_y)
 }
 
 /*
+    Controlla la collisioni della figura nei bordi
+*/
+int Map::controllaBordiCollisione(figura fig) {
+    int coll_dx = controllaCollisione(fig, 1, 0);
+    int coll_sx = controllaCollisione(fig, -1, 0);
+    int coll_dw = controllaCollisione(fig, 0, 1);
+    int coll_up = controllaCollisione(fig, 0, -1);
+    if(coll_dx != -1) {
+        return coll_dx;
+    }
+    if(coll_sx != -1) {
+        return coll_sx;
+    }
+    if(coll_dw != -1) {
+        return coll_dw;
+    }
+    if(coll_up != -1) {
+        return coll_up;
+    }
+    return -1;
+}
+
+/*
     Aggiunge un oggetto alla mappa, ovvero aggiunge ogni punto della figura
     dell'oggetto alla mappa con relativo id
 */
