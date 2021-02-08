@@ -194,7 +194,7 @@ void Map::setPunto(const char c[], int x, int y, int id, bool solido)
             r->solido = solido;
             if (r->solido)
             {
-                mvprintw(8, 80, "E SOLIDO %d - %d, id : %d", x, y , id);
+                mvprintw(8, 80, "E SOLIDO %3d - %3d, id : %3d", x, y , id);
             }
         }
     }
@@ -241,6 +241,44 @@ char *Map::getPunto(int x, int y)
 }
 
 /*
+    Ottiene se un punto contiene un oggetto solido
+*/
+bool Map::getSolidoPunto(int x, int y) {
+    mappa_t m = this->map;
+    bool found = false;
+    bool res = false;
+    while (m != NULL && found == false)
+    {
+        if (m->x == x)
+            found = true;
+        else
+            m = m->next;
+    }
+
+    if (m != NULL)
+    {
+        found = false;
+        riga r = m->r;
+        while (r != NULL && found == false)
+        {
+            if (r->y == y)
+                found = true;
+            else
+                r = r->next;
+        }
+
+        if (r != NULL)
+            return (r->solido);
+        else
+            return res;
+    }
+    else
+    {
+        return res;
+    }
+}
+
+/*
     Controlla se alle coordinata x e y è presente un punto
 */
 int Map::controllaCollisione(int x, int y)
@@ -254,6 +292,7 @@ int Map::controllaCollisione(int x, int y)
             found = true;
         else
             m = m->next;
+        c++;
     }
 
     if (m != NULL)
@@ -269,6 +308,7 @@ int Map::controllaCollisione(int x, int y)
             {
                 r = r->next;
             }
+            t++;
         }
 
         if (r != NULL)
@@ -288,6 +328,12 @@ int Map::controllaCollisione(int x, int y)
 riga Map::datiCollisione(int x, int y)
 {
     mappa_t m = getMappa();
+    riga err = new riga_t;
+    err->id = -1;
+    strcpy(err->c, "");
+    err->y = -1;
+    err->solido = false;
+    err->next = NULL;
     bool found = false;
     int c = 0; // controlla le collisioni solo in mappa visibile altrimenti non ha senso
     while (m != NULL && found == false && c < (_view))
@@ -296,6 +342,7 @@ riga Map::datiCollisione(int x, int y)
             found = true;
         else
             m = m->next;
+        c++;
     }
 
     if (m != NULL)
@@ -311,16 +358,17 @@ riga Map::datiCollisione(int x, int y)
             {
                 r = r->next;
             }
+            t++;
         }
 
-        if (r != NULL)
+        if (r != NULL && r->id != -1)
             return r;
         else
-            return NULL;
+            return err;
     }
     else
     {
-        return NULL;
+        return err;
     }
 }
 
@@ -386,11 +434,16 @@ int Map::controllaCollisione(figura fig, int inc_x, int inc_y)
 riga Map::datiCollisione(figura fig, int inc_x, int inc_y)
 {
     bool found = false;
-    riga res = NULL;
+    riga res = new riga_t;
+    res->id = -1;
+    strcpy(res->c, "");
+    res->y = -1;
+    res->solido = false;
+    res->next = NULL;
     while (fig != NULL && found == false)
     {
         riga col = datiCollisione(fig->x + inc_x, fig->y + inc_y);
-        if (col != NULL)
+        if (col != NULL && col->id != -1)
         {
             found = true;
             res = col;

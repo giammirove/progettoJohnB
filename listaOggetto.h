@@ -15,6 +15,7 @@ class ListaOggetto
 {
 private:
     listaObj _lista;
+    int _size;
 
 public:
     ListaOggetto();

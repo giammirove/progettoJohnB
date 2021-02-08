@@ -10,22 +10,7 @@
 ListaOggetto::ListaOggetto()
 {
     _lista = NULL;
-}
-
-/*
-    geSize ritorna la lunghezza totale della lista
-    scorrendola per intero
-*/
-int ListaOggetto::getSize()
-{
-    int s = 0;
-    listaObj t = _lista;
-    while (t != NULL)
-    {
-        s++;
-        t = t->next;
-    }
-    return s;
+    _size = 0;
 }
 
 /*
@@ -46,6 +31,7 @@ void ListaOggetto::aggiungi(Oggetto *obj)
         (t)->next = _lista;
         _lista = t;
     }
+    _size++;
 }
 
 /*
@@ -101,6 +87,8 @@ void ListaOggetto::rimuoviDaId(int id)
             t = t->next;
         }
     }
+
+    if(rimosso) _size--;
 }
 
 /*
@@ -122,4 +110,11 @@ Oggetto *ListaOggetto::getDaId(int id)
     }
 
     return NULL;
+}
+
+/*
+    Ritorna la dimensione della lista
+*/
+int ListaOggetto::getSize(){
+    return _size;
 }

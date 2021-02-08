@@ -69,6 +69,7 @@ public:
     void setPunto(const char c[], int x, int y);
     void setPunto(const char c[], int x, int y, int id, bool solido);
     char *getPunto(int x, int y);
+    bool getSolidoPunto(int x, int y);
 
     int controllaCollisione(int x, int y);
     int controllaCollisione(figura fig);

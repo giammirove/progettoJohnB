@@ -31,21 +31,10 @@ Gioco::Gioco(FILE *read)
 
     listaObj = new ListaOggetto();
     listaNem = new ListaNemici();
+    listaBonus = new ListaBonus();
 
     // Genera di default prima 15 stutture
-    for (int i = 0; i < 15; i++)
-    {
-        aggiungiBloccoAlMondo();
-        if (i % 2 == 0)
-        {
-            aggiungiNemico();
-        }
-        map->spostaVistaDestra();
-    }
-    for (int i = 0; i < 15; i++)
-    {
-        map->spostaVistaSinistra();
-    }
+    aggiungiBloccoAlMondo();
 }
 
 /*
@@ -222,7 +211,6 @@ void Gioco::elaboraInput(int c, int *prev)
                 {
                     // In caso affermativo sposto la vista a sinistra
                     map->spostaVistaSinistra();
-                    aggiungiBloccoAlMondo();
 
                     // Se l'input precedente è stato FRECCIA IN ALTO allora effettuo un salto a sinistra
                     player->resettaSaltoDestraSinistra();
@@ -418,13 +406,13 @@ void Gioco::gestioneCollisioneNemiciEArmi()
         int id_coll = map->controllaCollisione(player->getArma()->getFigura());
         if (id_coll != -1)
         {
-            if (listaNem->getDaId(id_coll) != NULL)
+            Nemico *nem = listaNem->getDaId(id_coll);
+            if (nem != NULL)
             {
-                mvprintw(1, 100, "NEMICO TOCCATO %d", id_coll);
                 // Elimina il nemico
-                map->rimuoviOggetto(listaNem->getDaId(id_coll));
-                listaObj->rimuoviDaId(id_coll);
-                listaNem->rimuoviDaId(id_coll);
+                rimuoviNemicoDaId(id_coll);
+                // Droppa bonus
+                aggiungiBonus(nem);
             }
         }
     }
@@ -435,17 +423,17 @@ void Gioco::gestioneCollisioneNemiciEArmi()
         Nemico *nem = listaNem->getDaId(id_coll);
         if (nem != NULL)
         {
-            int coll_dw = map->controllaCollisione(player->getFigura(), 0, 1);
+            int coll_dw = map->controllaCollisionePiattaforme(player->getFigura(), 0, 1);
             // se la collisione verso il basso non è con il nemico
-            if (coll_dw != id_coll || nem->getStatico() == true)
+            if (coll_dw != id_coll)
             {
                 player->decrementaVita(nem->getAttacco());
                 if (nem->getStatico() == false)
                 {
                     // Elimina il nemico
-                    map->rimuoviOggetto(listaNem->getDaId(id_coll));
-                    listaObj->rimuoviDaId(id_coll);
-                    listaNem->rimuoviDaId(id_coll);
+                    //map->rimuoviOggetto(listaNem->getDaId(id_coll));
+                    //listaObj->rimuoviDaId(id_coll);
+                    //listaNem->rimuoviDaId(id_coll);
                 }
             }
             else
@@ -453,20 +441,37 @@ void Gioco::gestioneCollisioneNemiciEArmi()
                 // se collido il nemico verso il basso allora gli sottraggo la vita
                 if (coll_dw == id_coll)
                 {
-                    player->salta();
                     nem->decrementaVita();
-                    mvprintw(6, 100, "VITA NEM %d", nem->getVita());
 
                     if (nem->getVita() == 0)
                     {
+
                         // Elimina il nemico
-                        map->rimuoviOggetto(listaNem->getDaId(id_coll));
-                        listaObj->rimuoviDaId(id_coll);
-                        listaNem->rimuoviDaId(id_coll);
+                        rimuoviNemicoDaId(id_coll);
+
+                        // genera un drop al suo posto
+                        aggiungiBonus(nem);
                     }
+                    if (nem->getInvulnerabile())
+                    {
+                        nem->decrementaInvulnerabile();
+                    }
+                    player->salta();
                 }
             }
         }
+
+        Bonus *bonus = listaBonus->getDaId(id_coll);
+        if (bonus != NULL)
+        {
+            rimuoviBonusDaId(id_coll);
+            applicaBonus(bonus);
+        }
+    }
+
+    if (player->getInvulnerabile())
+    {
+        player->decrementaInvulnerabile();
     }
 }
 
@@ -479,7 +484,6 @@ void Gioco::gestioneCollisioneNemiciEArmi()
 */
 void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
 {
-
     // Questo controllo permette di temporizzare la gravità
     if (sec % player->getClock() == 0)
     {
@@ -527,6 +531,13 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                         {
                             // In caso affermativo la sposto
                             map->spostaVistaSinistra();
+
+                            // Verifico di essere arrivato al limite sinistro della mappa
+                            if (map->getOffset() == 0)
+                            {
+                                // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
+                                player->vaiASinistra();
+                            }
                         }
                         // Altrimenti mi sposto solamente a sinistra
                         else
@@ -599,6 +610,13 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                     {
                         // In caso affermativo la sposto
                         map->spostaVistaSinistra();
+
+                        // Verifico di essere arrivato al limite sinistro della mappa
+                        if (map->getOffset() == 0)
+                        {
+                            // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
+                            player->vaiASinistra();
+                        }
                     }
                     // Altrimenti mi sposto solamente a sinistra
                     else
@@ -670,6 +688,13 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                             {
                                 // In caso affermativo la sposto
                                 map->spostaVistaSinistra();
+
+                                // Verifico di essere arrivato al limite sinistro della mappa
+                                if (map->getOffset() == 0)
+                                {
+                                    // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
+                                    player->vaiASinistra();
+                                }
                             }
                             // Altrimenti mi sposto solamente a sinistra
                             else
@@ -724,9 +749,9 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
 */
 void Gioco::gestioneNemici(int sec, bool *aggiorna)
 {
-    gestioneCollisioneNemiciEArmi();
     if (sec % NEMICI_CLOCK == 0)
     {
+        gestioneCollisioneNemiciEArmi();
         listaNemico lista = listaNem->getListaNemico();
         while (lista != NULL)
         {
@@ -751,10 +776,35 @@ void Gioco::gestioneNemici(int sec, bool *aggiorna)
 */
 void Gioco::aggiungiBloccoAlMondo()
 {
-    if (gestoreMondo->generoPavimento())
-        aggiungiOggetto(new Oggetto(gestoreMondo->getXPavimento(), map->getHeight() - 2, OS_PAVIMENTO, asciiArt));
-    Oggetto *tmp = gestoreMondo->generaOggetto();
-    aggiungiOggetto(tmp);
+    int chunk_size = 15;
+
+    if (player->getX() + map->getOffset() + map->getView() > gestoreMondo->getXPavimento())
+    {
+        for (int i = 0; i < chunk_size; i++)
+        {
+            if (gestoreMondo->generoPavimento())
+                aggiungiOggetto(new Oggetto(gestoreMondo->getXPavimento(), map->getHeight() - 2, OS_PAVIMENTO, asciiArt));
+        }
+    }
+
+    if (gestoreMondo->necessitoDiGenerareOggetto(player->getX() + map->getOffset() + map->getView()))
+    {
+
+        for (int i = 0; i < chunk_size; i++)
+        {
+            aggiungiOggetto(gestoreMondo->generaOggetto());
+
+            if (i % 2 == 0)
+            {
+                aggiungiNemico();
+            }
+            map->spostaVistaDestra();
+        }
+        for (int i = 0; i < chunk_size; i++)
+        {
+            map->spostaVistaSinistra();
+        }
+    }
     if ((player->getX() + map->getOffset()) % 7 == 0)
         player->incrementaScore();
 }
@@ -765,13 +815,11 @@ void Gioco::aggiungiBloccoAlMondo()
 void Gioco::aggiungiNemico()
 {
     Nemico *nem = gestoreMondo->generaNemico();
-    map->aggiungiOggetto(nem);
-    listaNem->aggiungi(nem);
-    listaObj->aggiungi(nem);
+    aggiungiNemico(nem);
 }
 
 /*
-    Aggiungi un nemico alla lista degli oggetti e alla mappa
+    Aggiungi un nemico alla lista degli oggetti e nemici e alla mappa
 */
 void Gioco::aggiungiNemico(Nemico *nem)
 {
@@ -781,10 +829,70 @@ void Gioco::aggiungiNemico(Nemico *nem)
 }
 
 /*
+    Rimuove il nemico dalla mappa, lista di nemici e oggetti
+*/
+void Gioco::rimuoviNemicoDaId(int id)
+{
+    map->rimuoviOggetto(listaNem->getDaId(id));
+    listaObj->rimuoviDaId(id);
+    listaNem->rimuoviDaId(id);
+}
+
+/*
     Aggiunge un oggetto alla mappa e alla lista di oggetti
 */
 void Gioco::aggiungiOggetto(Oggetto *obj)
 {
     map->aggiungiOggetto(obj);
     listaObj->aggiungi(obj);
+}
+
+/*
+    Rimuove un oggetto dalla mappa e dalla lista di oggetti
+*/
+void Gioco::rimuoviOggettoDaId(int id)
+{
+    map->rimuoviOggetto(listaObj->getDaId(id));
+    listaObj->rimuoviDaId(id);
+}
+
+/*
+    Aggiunge un bonus in base al drop del nemico alla mappa e alla lista di oggetti e bonus
+*/
+void Gioco::aggiungiBonus(Nemico *nem)
+{
+    int x = nem->getXBonus();
+    int y = nem->getYBonus();
+    aggiungiBonus(new Bonus(x, y, OS_BONUS_VITA, asciiArt));
+}
+
+/*
+    Aggiunge un bonus alla mappa e alla lista di oggetti e bonus
+*/
+void Gioco::aggiungiBonus(Bonus *bonus)
+{
+    map->aggiungiOggetto(bonus);
+    listaObj->aggiungi(bonus);
+    listaBonus->aggiungi(bonus);
+}
+
+/*
+    Rimuove il bonus dalla mappa, lista di nemici e oggetti
+*/
+void Gioco::rimuoviBonusDaId(int id)
+{
+    map->rimuoviOggetto(listaBonus->getDaId(id));
+    listaObj->rimuoviDaId(id);
+    listaBonus->rimuoviDaId(id);
+}
+
+/*
+    Applica tutti gli effetti del bonus al player
+*/
+void Gioco::applicaBonus(Bonus *bonus)
+{
+    player->incrementaVita(bonus->getBonusVita());
+    player->incrementaScore(bonus->getBonusScore());
+    // DA SISTEMARE
+    //player->cambiaArmaAttiva();
 }

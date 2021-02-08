@@ -7,6 +7,7 @@ Nemico::Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 	: Oggetto(x, y, tipo, asciiArt)
 {
 	_direction = true;
+	_MAX_INVULNERABILE = 0;
 	impostaFigura(tipo, asciiArt);
 }
 
@@ -119,6 +120,21 @@ bool Nemico::getStatico()
 }
 
 /*
+	Ritorna la posizione x per il drop del bonus
+*/
+int Nemico::getXBonus(){
+	return getZampaSinistra()[0];
+}
+
+/*
+	Ritorna la posizione y per il drop del bonus
+*/
+int Nemico::getYBonus(){
+	return getZampaSinistra()[1];
+}
+
+
+/*
 	True sse va a sinistra
 	False sse va a destra
 */
@@ -134,18 +150,59 @@ bool Nemico::changeDirection()
 }
 
 /*
+	Ritorna se il nemico è invulnerabile
+*/
+bool Nemico::getInvulnerabile()
+{
+	return _invulnerabile != 0;
+}
+
+/*
+	Ritorna il numero di riferimento per l'invulnerabilità 
+*/
+int Nemico::getValoreInvulnerabile()
+{
+    return _invulnerabile;
+}
+
+/*
+	Decrementa la variabile dell'incremento
+*/
+int Nemico::decrementaInvulnerabile(){
+	_invulnerabile--;
+	if(_invulnerabile < 0) _invulnerabile = 0;
+	return _invulnerabile;
+}
+
+/*
+	Cambia lo stato di invulnerabile in val
+*/
+bool Nemico::setInvulnerabile()
+{
+	_invulnerabile = _MAX_INVULNERABILE;
+	return getInvulnerabile();
+}
+
+/*
 	Riduce la vita del nemico di n
 */
-int Nemico::decrementaVita(int n) {
-	_vita -= n;
-	if (_vita < 0) _vita = 0;
+int Nemico::decrementaVita(int n)
+{
+	if (getInvulnerabile() == false)
+	{
+		setInvulnerabile();
+		_vita -= n;
+		if (_vita < 0)
+			_vita = 0;
+	}
 	return _vita;
 }
 
 /*
 	Riduce la vita del nemico di 1
 */
-int Nemico::decrementaVita() {
+int Nemico::decrementaVita()
+{
 	return decrementaVita(1);
 }
 
@@ -222,7 +279,7 @@ void Nemico::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 
 	case OS_PIATTAFORMA_APPUNTITA:
 		_vita = 2;
-		_attacco = 2;
+		_attacco = 0;
 		_statico = true;
 		break;
 

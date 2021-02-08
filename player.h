@@ -29,6 +29,8 @@ private:
     figura _figura;
     Weapon *_arma;
     bool _armaAttiva;
+    int _invulnerabile;
+	int _MAX_INVULNERABILE;
 
     void aggiornaFigura(int inc_x, int inc_y);
     void calcolaPosizioneArma(int *pos_x, int *pos_y);
@@ -51,6 +53,11 @@ public:
     bool getSaltaDestra();
     bool getSaltaSinistra();
     bool getDirezione();
+
+    bool getInvulnerabile();
+    int getValoreInvulnerabile();
+	int decrementaInvulnerabile();
+	bool setInvulnerabile();
 
     bool toccoLaLava(int map_h);
 

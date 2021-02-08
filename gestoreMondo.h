@@ -28,6 +28,7 @@ class GestoreMondo {
         Oggetto *generaOggetto ();
         Nemico *generaNemico();
         bool generoPavimento();
+        bool necessitoDiGenerareOggetto(int x);
         int getXPavimento();
 };
 

@@ -1,10 +1,10 @@
-test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o
-	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o -lncursesw
+test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o bonus.o listaBonus.o
+	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o bonus.o listaBonus.o -lncursesw
 
 main.o : main.cpp map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h gioco.h
 	g++ -c main.cpp -lncursesw
 
-gioco.o : gioco.cpp gioco.h map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h
+gioco.o : gioco.cpp gioco.h map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h bonus.o listaBonus.o
 	g++ -c gioco.cpp -lncursesw
 
 convertiAsciiArt.o : convertiAsciiArt.cpp convertiAsciiArt.h utility.h
@@ -31,7 +31,7 @@ gestoreMovimento.o : gestoreMovimento.cpp gestoreMovimento.h player.h listaOgget
 gestoreMondo.o : gestoreMondo.cpp gestoreMondo.h oggetto.h convertiAsciiArt.h utility.h
 	g++ -c gestoreMondo.cpp -lncursesw
 
-listaNemici.o : listaNemici.cpp listaNemici.h 
+listaNemici.o : listaNemici.cpp listaNemici.h nemico.h
 	g++ -c listaNemici.cpp -lncursesw
 
 nemico.o: nemico.cpp nemico.h oggetto.h map.h 
@@ -39,6 +39,12 @@ nemico.o: nemico.cpp nemico.h oggetto.h map.h
 
 weapon.o: weapon.cpp weapon.h oggetto.h map.h utility.h
 	g++ -c weapon.cpp -lncursesw
+
+bonus.o: bonus.cpp bonus.h oggetto.h map.h utility.h
+	g++ -c bonus.cpp -lncursesw
+
+listaBonus.o: listaBonus.cpp listaBonus.h bonus.h oggetto.h
+	g++ -c listaBonus.cpp -lncursesw
 
 clean :
 	rm *.o test

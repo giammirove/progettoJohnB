@@ -18,6 +18,8 @@
 #include "gestoreMondo.h"
 #include "listaNemici.h"
 #include "nemico.h"
+#include "listaBonus.h"
+#include "bonus.h"
 
 class Gioco
 {
@@ -30,6 +32,7 @@ private:
     Map *map;
     ListaOggetto *listaObj;
     ListaNemici *listaNem;
+    ListaBonus *listaBonus;
     #pragma endregion
 
     #pragma region Constanti
@@ -61,6 +64,7 @@ public:
     Map *getMap();
     ListaOggetto *getListaObj();
     ListaNemici *getListaNem();
+    ListaBonus *getListaBonus();
 
     void gestisciGioco(int c, int *prev, int sec, int nemClock, bool*aggiorna);
 
@@ -73,7 +77,14 @@ public:
     void aggiungiBloccoAlMondo();
     void aggiungiNemico();
     void aggiungiNemico(Nemico *nem);
+    void rimuoviNemicoDaId(int id);
     void aggiungiOggetto(Oggetto *obj);
+    void rimuoviOggettoDaId(int id);
+    void aggiungiBonus(Nemico *nem);
+    void aggiungiBonus(Bonus *bonus);
+    void rimuoviBonusDaId(int id);
+
+    void applicaBonus(Bonus *bonus);
 };
 
 #endif

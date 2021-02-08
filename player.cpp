@@ -29,6 +29,8 @@ Player::Player(int x, int y, int view, int saltaHeight)
     _score = 0;
     _vita = 3;
     _armaAttiva = false;
+    _invulnerabile = 0;
+    _MAX_INVULNERABILE = 3;
     resettaSalto();
 }
 
@@ -48,6 +50,8 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _score = 0;
     _vita = 3;
     _armaAttiva = false;
+    _invulnerabile = 0;
+    _MAX_INVULNERABILE = 10;
     resettaSalto();
 
     setFigura(fig);
@@ -201,6 +205,42 @@ bool Player::getDirezione()
 }
 
 /*
+	Ritorna se il player è invulnerabile
+*/
+bool Player::getInvulnerabile()
+{
+    return _invulnerabile > 0;
+}
+
+/*
+	Ritorna il numero di riferimento per l'invulnerabilità 
+*/
+int Player::getValoreInvulnerabile()
+{
+    return _invulnerabile;
+}
+
+/*
+	Decrementa la variabile dell'incremento
+*/
+int Player::decrementaInvulnerabile()
+{
+    _invulnerabile--;
+    if (_invulnerabile < 0)
+        _invulnerabile = 0;
+    return _invulnerabile;
+}
+
+/*
+	Cambia lo stato di invulnerabile in val
+*/
+bool Player::setInvulnerabile()
+{
+    _invulnerabile = _MAX_INVULNERABILE;
+    return getInvulnerabile();
+}
+
+/*
     Verifica se sta toccando la lava
 */
 bool Player::toccoLaLava(int map_h)
@@ -212,7 +252,7 @@ bool Player::toccoLaLava(int map_h)
     }
     if (f != NULL)
     {
-        if (f->y == map_h -1)
+        if (f->y == map_h - 1)
             return true;
     }
     return false;
@@ -302,25 +342,27 @@ void Player::calcWidthAndHeight()
 /*
     Ritorna l'oggetto arma del player
 */
-Weapon *Player::getArma(){
+Weapon *Player::getArma()
+{
     return _arma;
 }
 
 /*
     Imposta l'arma del player
 */
-void Player::setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt) {
+void Player::setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt)
+{
     int arma_x = 0;
     int arma_y = 0;
     calcolaPosizioneArma(&arma_x, &arma_y);
     _arma = new Weapon(0, 0, tipoArma, asciiArt);
     // sto guardando a sinistra
-    if(_direzione == true)
+    if (_direzione == true)
     {
         _arma->muoviFigura(arma_x - _arma->getWidth(), arma_y);
     }
     // sto andando a destra
-    else 
+    else
     {
         _arma->muoviFigura(arma_x, arma_y);
     }
@@ -328,8 +370,9 @@ void Player::setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt) {
 
 /*
     Cambia lo stato di visibilità dell'arma
-*/ 
-bool Player::cambiaArmaAttiva(){
+*/
+bool Player::cambiaArmaAttiva()
+{
     _armaAttiva = !_armaAttiva;
     return _armaAttiva;
 }
@@ -337,7 +380,8 @@ bool Player::cambiaArmaAttiva(){
 /*
     Ritorna lo stato di visibilità dell'arma
 */
-bool Player::getArmaAttiva(){
+bool Player::getArmaAttiva()
+{
     return _armaAttiva;
 }
 
@@ -385,8 +429,7 @@ void Player::vaiInBasso()
 */
 void Player::salta()
 {
-    if (_saltaInt == 0)
-        _saltaInt = _saltaHeight;
+    _saltaInt = _saltaHeight;
 }
 
 /*
@@ -444,9 +487,13 @@ void Player::resettaSaltoDestraSinistra()
 */
 int Player::decrementaVita(int n)
 {
-    _vita -= n;
-    if (_vita < 0)
-        _vita = 0;
+    if (getInvulnerabile() == false)
+    {
+        setInvulnerabile();
+        _vita -= n;
+        if (_vita < 0)
+            _vita = 0;
+    }
     return _vita;
 }
 
@@ -539,15 +586,16 @@ void Player::aggiornaFigura(int inc_x, int inc_y)
     }
 
     // se la direzione precedente è diversa aggiorno l'immagine
-    if(_direzione != _arma->getDirezione()) {
+    if (_direzione != _arma->getDirezione())
+    {
         _arma->setDirezione(_direzione);
-        if(_direzione)
-            _arma->muoviFigura(-(_width*2), 0);
-        else 
-            _arma->muoviFigura((_width*2), 0);
+        if (_direzione)
+            _arma->muoviFigura(-(_width * 2), 0);
+        else
+            _arma->muoviFigura((_width * 2), 0);
         mvprintw(3, 100, "WIDTH %d", _width);
     }
-    _arma->muoviFigura(inc_x, inc_y); 
+    _arma->muoviFigura(inc_x, inc_y);
     mvprintw(2, 100, "%d", _arma->getFigura()->x);
 }
 
@@ -586,15 +634,17 @@ void Player::calcolaPosizioneArma(int *pos_x, int *pos_y)
             _tmp = _tmp->next;
         }
 
-        int media_y = (int)((max_y+min_y)/2);
+        int media_y = (int)((max_y + min_y) / 2);
         *pos_y = media_y;
 
         // sto guardando a sinistra
-        if(_direzione == true) {
+        if (_direzione == true)
+        {
             *pos_x = min_x - 1;
         }
         // sto guardando a destra
-        else {
+        else
+        {
             *pos_x = max_x + 1;
         }
     }

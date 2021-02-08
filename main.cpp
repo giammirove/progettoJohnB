@@ -78,11 +78,13 @@ void disegnaMappa(WINDOW *win, Map *map)
 void disegnaPlayer(WINDOW *win, Player player)
 {
     figura fig = player.getFigura();
+    if(player.getInvulnerabile() && player.getValoreInvulnerabile() % 2 == 0) wattron(win, COLOR_PAIR(1));
     while (fig != NULL)
-    {
+    {   
         mvwprintw(win, fig->y + 1, fig->x + 1, fig->c);
         fig = fig->next;
     }
+    if(player.getInvulnerabile() && player.getValoreInvulnerabile() % 2 == 0) wattroff(win, COLOR_PAIR(1));
     if (player.getArmaAttiva())
     {
         figura arma = player.getArma()->getFigura();
@@ -195,12 +197,12 @@ int main()
     int prev = -1;
     int idle = IDLE_TIME;
 
-    while (true && gioco->getPlayer()->getVita() > 0)
+    while (true /*&& gioco->getPlayer()->getVita() > 0*/)
     {
         if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
         {
-            gioco->getPlayer()->muori();
-            continue;
+            //gioco->getPlayer()->muori();
+            //continue;
         }
 
         aggiorna = false;
@@ -254,9 +256,9 @@ int main()
         mvwprintw(debug, 9, 1, "SCENDO : %d", gioco->getPlayer()->stoScendendo());
         mvwprintw(debug, 10, 1, "OFFSET : %d", gioco->getMap()->getOffset());
         mvwprintw(debug, 11, 1, "DIR : %d", gioco->getPlayer()->getArma()->getDirezione());
+        mvwprintw(debug, 12, 1, "SIZE : %d", gioco->getListaObj()->getSize());
+        mvwprintw(debug, 13, 1, "INV : %4d", gioco->getPlayer()->getInvulnerabile());
         wrefresh(debug);
-
-        mvprintw(0, 40, "SIZE %d", gioco->getListaObj()->getSize());
         sec++;
         nemClock++;
         if (idle > 0)

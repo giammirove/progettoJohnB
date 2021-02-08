@@ -17,6 +17,8 @@ protected:
 	int _attacco;
 	bool _direction;
 	bool _statico;
+	int _invulnerabile;
+	int _MAX_INVULNERABILE;
 
 public:
 	Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
@@ -26,6 +28,14 @@ public:
 	int getVita();
 	bool getDirection();
 	bool getStatico();
+
+	int getXBonus();
+	int getYBonus();
+
+	bool getInvulnerabile();
+	int getValoreInvulnerabile();
+	int decrementaInvulnerabile();
+	bool setInvulnerabile();
 
 	int decrementaVita(int n);
 	int decrementaVita();
