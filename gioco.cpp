@@ -444,20 +444,28 @@ void Gioco::gestioneCollisioneNemiciEArmi()
                 // se collido il nemico verso il basso allora gli sottraggo la vita
                 if (coll_dw == id_coll)
                 {
-                    nem->decrementaVita();
-
-                    if (nem->getVita() == 0)
+                    if (nem->getStatico())
                     {
-
-                        // Elimina il nemico
-                        rimuoviNemicoDaId(id_coll);
-
-                        // genera un drop al suo posto
-                        aggiungiBonus(nem);
+                        player->decrementaVita(nem->getAttacco());
                     }
-                    if (nem->getInvulnerabile())
+                    else
                     {
-                        nem->decrementaInvulnerabile();
+                        nem->decrementaVita();
+
+                        if (nem->getVita() == 0)
+                        {
+
+                            // Elimina il nemico
+                            rimuoviNemicoDaId(id_coll);
+                            // genera un drop al suo posto
+                            aggiungiBonus(nem);
+                            // Dai i punti al player
+                            player->incrementaScore(nem->getScore());
+                        }
+                        if (nem->getInvulnerabile())
+                        {
+                            nem->decrementaInvulnerabile();
+                        }
                     }
                     player->salta();
                 }
@@ -794,7 +802,7 @@ void Gioco::aggiungiBloccoAlMondo()
     {
         for (int i = 0; i < chunk_size; i++)
         {
-            if (gestoreMondo->generoPavimento())
+            if (gestoreMondo->generoPavimento(player->getScore()))
                 aggiungiOggetto(new Oggetto(gestoreMondo->getXPavimento(), map->getHeight() - 2, OS_PAVIMENTO, asciiArt));
         }
     }
@@ -806,10 +814,7 @@ void Gioco::aggiungiBloccoAlMondo()
         {
             aggiungiOggetto(gestoreMondo->generaOggetto());
 
-            if (i % 2 != 0)
-            {
-                aggiungiNemico();
-            }
+            aggiungiNemico();
             map->spostaVistaDestra();
         }
         for (int i = 0; i < chunk_size; i++)
@@ -826,8 +831,14 @@ void Gioco::aggiungiBloccoAlMondo()
 */
 void Gioco::aggiungiNemico()
 {
-    Nemico *nem = gestoreMondo->generaNemico();
-    aggiungiNemico(nem);
+    int perc = (int)((0.1 * (double)(player->getScore())) + 30);
+    if (perc > 100)
+        perc = 100;
+    if (randomNumber(0, 100) < perc)
+    {
+        Nemico *nem = gestoreMondo->generaNemico();
+        aggiungiNemico(nem);
+    }
 }
 
 /*

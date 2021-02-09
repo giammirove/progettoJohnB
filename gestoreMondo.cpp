@@ -105,13 +105,16 @@ Nemico *GestoreMondo::generaNemico()
 /*
     Chiede se deve generare il pavimento
 */
-bool GestoreMondo::generoPavimento()
+bool GestoreMondo::generoPavimento(int score)
 {
     _lastXPavimento += _width;
     if (_lastXPavimento == _width){
         return true;
     }
-    return randomNumber(0, 10) % 4 != 0;
+    // formula by https://www.dcode.fr/function-equation-finder
+    int perc = (int)(91.6667 - (0.140476*(double)(score)));
+    if(perc < 0) perc = 0;
+    return randomNumber(0, 100) <= perc;
 }
 
 /*

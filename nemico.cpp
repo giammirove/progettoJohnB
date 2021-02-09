@@ -288,7 +288,7 @@ void Nemico::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 
 	case OS_PIATTAFORMA_APPUNTITA:
 		_vita = 2;
-		_attacco = 0;
+		_attacco = 1;
 		_statico = true;
 		break;
 
