@@ -177,6 +177,16 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _clock = 100000;
         _solido = false;
         break;
+    case OS_BONUS_ARMA:
+        caricaFigura(&_figura, "BONUS_ARMA", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
+    case OS_BONUS_SCORE:
+        caricaFigura(&_figura, "BONUS_SCORE", asciiArt);
+        _clock = 100000;
+        _solido = false;
+        break;
     default:
         aggiungiPuntoAFigura(&_figura, _x, _y, "?");
         _clock = 100000;

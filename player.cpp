@@ -371,10 +371,26 @@ void Player::setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt)
 /*
     Cambia lo stato di visibilità dell'arma
 */
-bool Player::cambiaArmaAttiva()
+int Player::cambiaArmaAttiva(int val)
 {
-    _armaAttiva = !_armaAttiva;
+    _armaAttiva += val;
     return _armaAttiva;
+}
+
+/*
+    Ritorna lo stato di visibilità dell'arma
+*/
+int Player::getValoreArma(){
+    return _armaAttiva;
+}
+
+/*
+    Decrementa lo stato di attivo dell'arma
+*/
+bool Player::decrementaArmaAttiva() {
+    _armaAttiva--;
+    if(_armaAttiva < 0) _armaAttiva = 0;
+    return getArmaAttiva();
 }
 
 /*
@@ -382,7 +398,7 @@ bool Player::cambiaArmaAttiva()
 */
 bool Player::getArmaAttiva()
 {
-    return _armaAttiva;
+    return _armaAttiva > 0;
 }
 
 /*

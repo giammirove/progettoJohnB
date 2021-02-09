@@ -13,6 +13,8 @@
 
     I PRIMI N OGGETTI (AL MOMENTO 2) 
     sono utilizzati per la generazione delle piattaforme
+    POI CI SONO N NEMICI
+    E IN SEGUITO N BONUS
 */
 enum TipoDiOggetto
 {
@@ -36,10 +38,12 @@ enum TipoDiOggetto
     OS_NEMICO8,
     OS_NEMICO9,
     OS_NEMICO10,
+    OS_BONUS_VITA,
+    OS_BONUS_SCORE,
+    OS_BONUS_ARMA,
     OS_ARMA1,
     OS_ARMA1_DX,
     OS_ARMA1_SX,
-    OS_BONUS_VITA,
     OS_ALBERO,
     OS_CESPUGLIO,
     OS_KIRBY,

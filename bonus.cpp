@@ -29,6 +29,13 @@ int Bonus::getBonusArma(){
 }
 
 /*
+    Ritorna la probabilità di essere droppato
+*/
+int Bonus::getProbabilita(){
+    return _probabilita;
+}
+
+/*
     Imposta la figura e i dati del bonus
 */
 void Bonus::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
@@ -41,7 +48,20 @@ void Bonus::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _bonusVita = 2;
         _bonusScore = 0;
         _bonusArma = 0;
+        _probabilita = 30;
 		break;
+    case OS_BONUS_ARMA:
+        _bonusVita = 0;
+        _bonusScore = 0;
+        _bonusArma = 40;
+        _probabilita = 10;
+        break;
+    case OS_BONUS_SCORE:
+        _bonusVita = 0;
+        _bonusScore = 20;
+        _bonusArma = 0;
+        _probabilita = 60;
+        break; 
 
 	default:
         _bonusVita = 0;

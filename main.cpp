@@ -42,9 +42,12 @@ void disegnaScoreEVita(WINDOW *win, Player *player)
 {
     for (int i = 0; i < player->getVita() * 2; i += 2)
     {
-        mvwprintw(win, 0 + 1, i + 1, "♥");
+        mvwprintw(win, 1, i + 1, "♥");
     }
-    mvwprintw(win, 1 + 1, 0 + 1, "Score %d", player->getScore());
+    mvwprintw(win, 2, 1, "Score %d", player->getScore());
+    if(player->getArmaAttiva()) {
+        mvwprintw(win, 1, W_WIN - 12, "ARMA %3d", player->getValoreArma());
+    }
 }
 
 /*
@@ -197,12 +200,12 @@ int main()
     int prev = -1;
     int idle = IDLE_TIME;
 
-    while (true /*&& gioco->getPlayer()->getVita() > 0*/)
+    while (true && gioco->getPlayer()->getVita() > 0)
     {
         if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
         {
-            //gioco->getPlayer()->muori();
-            //continue;
+            gioco->getPlayer()->muori();
+            continue;
         }
 
         aggiorna = false;
@@ -218,14 +221,7 @@ int main()
             idle = IDLE_TIME;
         }
 
-        gioco->gestisciGioco(c, &prev, sec, nemClock, &aggiorna);
-
-        // aggiornamento automatico
-        if (sec % SCREEN_CLOCK == 0)
-        {
-            aggiorna = true;
-            sec = 0;
-        }
+        gioco->gestisciGioco(c, &prev, sec, &aggiorna);
 
         if (c != -1)
         {
@@ -258,9 +254,9 @@ int main()
         mvwprintw(debug, 11, 1, "DIR : %d", gioco->getPlayer()->getArma()->getDirezione());
         mvwprintw(debug, 12, 1, "SIZE : %d", gioco->getListaObj()->getSize());
         mvwprintw(debug, 13, 1, "INV : %4d", gioco->getPlayer()->getInvulnerabile());
+        mvwprintw(debug, 14, 1, "NEM : %d", nemClock);
         wrefresh(debug);
         sec++;
-        nemClock++;
         if (idle > 0)
             idle--;
         if (sec % INPUT_CLOCK == 0)
@@ -269,8 +265,6 @@ int main()
         }
         if (sec >= MAX_SEC)
             sec = 0;
-        if (nemClock >= MAX_CLOCK_NEMICI)
-            nemClock = 0;
     }
 
     schermataDiPerdita(win);

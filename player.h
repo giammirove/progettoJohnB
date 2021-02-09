@@ -28,7 +28,7 @@ private:
     bool _direzione; // true se a sinistra, false se a destra
     figura _figura;
     Weapon *_arma;
-    bool _armaAttiva;
+    int _armaAttiva;
     int _invulnerabile;
 	int _MAX_INVULNERABILE;
 
@@ -73,7 +73,9 @@ public:
 
     Weapon *getArma();
     void setArma(TipoDiOggetto tipoArma, ConvertiAsciiArt *asciiArt);
-    bool cambiaArmaAttiva();
+    int cambiaArmaAttiva(int val);
+    int getValoreArma();
+    bool decrementaArmaAttiva();
     bool getArmaAttiva();
 
     void vaiADestra();

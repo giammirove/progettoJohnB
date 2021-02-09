@@ -47,6 +47,9 @@ private:
 
     const int NUM_PIATTAFORME = 10;
     const int NUM_NEMICI = 10;
+    const int NUM_BONUS = 3;
+
+    const int BONUS_DROP_RATE = 4;
 
     int H_WIN = 24;
     int W_WIN = 60;
@@ -66,7 +69,7 @@ public:
     ListaNemici *getListaNem();
     ListaBonus *getListaBonus();
 
-    void gestisciGioco(int c, int *prev, int sec, int nemClock, bool*aggiorna);
+    void gestisciGioco(int c, int *prev, int sec, bool*aggiorna);
 
     void elaboraInput(int c, int *prev);
 

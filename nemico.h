@@ -15,6 +15,7 @@ class Nemico : public Oggetto
 protected:
 	int _vita;
 	int _attacco;
+	int _score;
 	bool _direction;
 	bool _statico;
 	int _invulnerabile;
@@ -26,6 +27,7 @@ public:
 
 	int getAttacco();
 	int getVita();
+	int getScore();
 	bool getDirection();
 	bool getStatico();
 

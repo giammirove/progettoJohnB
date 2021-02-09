@@ -88,10 +88,10 @@ ListaNemici *Gioco::getListaNem()
 /*
     Gestisce tutto il gioco 
 */
-void Gioco::gestisciGioco(int c, int *prev, int sec, int nemClock, bool *aggiorna)
+void Gioco::gestisciGioco(int c, int *prev, int sec, bool *aggiorna)
 {
     // Gestisce i nemici
-    gestioneNemici(nemClock, aggiorna);
+    gestioneNemici(sec, aggiorna);
 
     gestioneGravitaESalto(sec, c, prev, aggiorna);
 
@@ -390,7 +390,7 @@ void Gioco::elaboraInput(int c, int *prev)
     }
     if (c == 'c')
     {
-        player->cambiaArmaAttiva();
+        player->cambiaArmaAttiva(5);
     }
 
 #pragma endregion
@@ -413,8 +413,11 @@ void Gioco::gestioneCollisioneNemiciEArmi()
                 rimuoviNemicoDaId(id_coll);
                 // Droppa bonus
                 aggiungiBonus(nem);
+                // Dai i punti al player
+                player->incrementaScore(nem->getScore());
             }
         }
+        player->decrementaArmaAttiva();
     }
 
     int id_coll = map->controllaBordiCollisione(player->getFigura());
@@ -510,6 +513,7 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                         else
                         {
                             player->vaiADestra();
+                            player->setFigura(asciiArt->getFigura("PG_DX"));
                         }
                     }
                     // Se non posso andare a destra interrompo il mio salto
@@ -537,12 +541,14 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                             {
                                 // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
                                 player->vaiASinistra();
+                                player->setFigura(asciiArt->getFigura("PG_SX"));
                             }
                         }
                         // Altrimenti mi sposto solamente a sinistra
                         else
                         {
                             player->vaiASinistra();
+                            player->setFigura(asciiArt->getFigura("PG_SX"));
                         }
                     }
                     // Se non posso andare a sinistra interrompo il mio salto
@@ -589,6 +595,7 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                     else
                     {
                         player->vaiADestra();
+                        player->setFigura(asciiArt->getFigura("PG_DX"));
                     }
                 }
                 // Se non posso andare a destra interrompo il mio salto
@@ -616,12 +623,14 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                         {
                             // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
                             player->vaiASinistra();
+                            player->setFigura(asciiArt->getFigura("PG_SX"));
                         }
                     }
                     // Altrimenti mi sposto solamente a sinistra
                     else
                     {
                         player->vaiASinistra();
+                        player->setFigura(asciiArt->getFigura("PG_SX"));
                     }
                 }
                 // Se non posso andare a sinistra interrompo il mio salto
@@ -666,6 +675,7 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                             else
                             {
                                 player->vaiADestra();
+                                player->setFigura(asciiArt->getFigura("PG_DX"));
                             }
                             //*prev = KEY_RIGHT;
                         }
@@ -694,12 +704,14 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
                                 {
                                     // In caso mi trovi nella prima vista della mappa e possa muovermi a sinistra
                                     player->vaiASinistra();
+                                    player->setFigura(asciiArt->getFigura("PG_SX"));
                                 }
                             }
                             // Altrimenti mi sposto solamente a sinistra
                             else
                             {
                                 player->vaiASinistra();
+                                player->setFigura(asciiArt->getFigura("PG_SX"));
                             }
                             //*prev = KEY_LEFT;
                         }
@@ -794,7 +806,7 @@ void Gioco::aggiungiBloccoAlMondo()
         {
             aggiungiOggetto(gestoreMondo->generaOggetto());
 
-            if (i % 2 == 0)
+            if (i % 2 != 0)
             {
                 aggiungiNemico();
             }
@@ -861,9 +873,29 @@ void Gioco::rimuoviOggettoDaId(int id)
 */
 void Gioco::aggiungiBonus(Nemico *nem)
 {
-    int x = nem->getXBonus();
-    int y = nem->getYBonus();
-    aggiungiBonus(new Bonus(x, y, OS_BONUS_VITA, asciiArt));
+    int drop = randomNumber(0, BONUS_DROP_RATE);
+    if (drop == 0)
+    {
+
+        int x = nem->getXBonus();
+        int y = nem->getYBonus();
+        bool dropped = false;
+        while (dropped == false)
+        {
+            int rnd = NUM_PIATTAFORME + NUM_NEMICI + randomNumber(0, NUM_BONUS - 1);
+            Bonus *tmp = new Bonus(x, y, (TipoDiOggetto)(rnd), asciiArt);
+            int prob = randomNumber(0, 100);
+            if (prob <= tmp->getProbabilita())
+            {
+                dropped = true;
+                aggiungiBonus(tmp);
+            }
+            else
+            {
+                delete tmp;
+            }
+        }
+    }
 }
 
 /*
@@ -893,6 +925,5 @@ void Gioco::applicaBonus(Bonus *bonus)
 {
     player->incrementaVita(bonus->getBonusVita());
     player->incrementaScore(bonus->getBonusScore());
-    // DA SISTEMARE
-    //player->cambiaArmaAttiva();
+    player->cambiaArmaAttiva(bonus->getBonusArma());
 }
