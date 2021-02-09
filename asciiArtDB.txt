@@ -8,7 +8,7 @@
  / >
 ::PG_SX
   o
- VY<
+ VY>
  < \
 ::NEMICO1
  ,,,
@@ -24,7 +24,7 @@ _/ \_
 ::ARMA1_SX
 --+
 ::PIATTAFORMA_APPUNTITA
-********
+*******
 ::RAGNO
 /|o|\
 ::BONUS_ARMA
