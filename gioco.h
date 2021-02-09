@@ -24,8 +24,7 @@
 class Gioco
 {
 private:
-
-    #pragma region  Oggetti
+#pragma region Oggetti
     Player *player;
     ConvertiAsciiArt *asciiArt;
     GestoreMondo *gestoreMondo;
@@ -33,30 +32,33 @@ private:
     ListaOggetto *listaObj;
     ListaNemici *listaNem;
     ListaBonus *listaBonus;
-    #pragma endregion
+#pragma endregion
 
-    #pragma region Constanti
+#pragma region Constanti
 
     const int SCREEN_CLOCK = 100000;
     const int INPUT_CLOCK = 20000;
-    const int NEMICI_CLOCK = 1000;
+    const int NEMICI_CLOCK = 100;
     const int MAX_CLOCK_NEMICI = 2000;
+    const int MAX_CLOCK = 60000;
 
-    const int IDLE_TIME = 5000;
-    const int MAX_SEC = 2000;
+    const int IDLE_TIME = 20000;
+    const int MAX_SEC = 200000;
 
-    const int NUM_PIATTAFORME = 10;
-    const int NUM_NEMICI = 10;
+    const int NUM_PIATTAFORME = 2;
+    const int NUM_NEMICI = 4;
     const int NUM_BONUS = 3;
 
     const int BONUS_DROP_RATE = 4;
 
-    int H_WIN = 24;
+    int H_WIN = 27;
     int W_WIN = 60;
 
     const int MOV_LATERALE_IN_ARIA = 2;
 
-    #pragma endregion
+    const int DEBUG = false;
+
+#pragma endregion
 
 public:
     Gioco(FILE *read);
@@ -69,11 +71,11 @@ public:
     ListaNemici *getListaNem();
     ListaBonus *getListaBonus();
 
-    void gestisciGioco(int c, int *prev, int sec, bool*aggiorna);
+    void gestisciGioco(int c, int *prev, int sec, bool *aggiorna);
 
     void elaboraInput(int c, int *prev);
 
-    void gestioneCollisioneNemiciEArmi();
+    void gestioneCollisioneNemiciEArmi(int s, int c);
     void gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna);
     void gestioneNemici(int sec, bool *aggiorna);
 

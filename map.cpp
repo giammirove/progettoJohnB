@@ -163,7 +163,7 @@ void Map::setPunto(const char c[], int x, int y)
     Imposta un punto nella mappa in base alle coordinate x e y, ci associa un particolare id
     guardare commenti della funzione setPunto
 */
-void Map::setPunto(const char c[], int x, int y, int id, bool solido)
+void Map::setPunto(const char c[], int x, int y, int id, bool solido, TipoDiOggetto tipo)
 {
     mappa_t m = this->map;
     bool found = false;
@@ -191,11 +191,8 @@ void Map::setPunto(const char c[], int x, int y, int id, bool solido)
         {
             strcpy(r->c, c);
             r->id = id;
+            r->tipo = tipo;
             r->solido = solido;
-            if (r->solido)
-            {
-                mvprintw(8, 80, "E SOLIDO %3d - %3d, id : %3d", x, y , id);
-            }
         }
     }
 }
@@ -596,7 +593,7 @@ void Map::aggiungiOggetto(Oggetto *obj)
         while (fig != NULL)
         {
             if (strlen(fig->c) > 0)
-                setPunto(fig->c, fig->x, fig->y, obj->getId(), obj->getSolido());
+                setPunto(fig->c, fig->x, fig->y, obj->getId(), obj->getSolido(), obj->getTipoDiOggetto());
             fig = fig->next;
         }
     }
@@ -614,7 +611,7 @@ void Map::rimuoviOggetto(Oggetto *obj)
         while (fig != NULL)
         {
             if (strlen(fig->c) > 0)
-                setPunto("", fig->x, fig->y, -1, false);
+                setPunto("", fig->x, fig->y, -1, false, OS_ERR);
             fig = fig->next;
         }
     }
@@ -693,6 +690,7 @@ void Map::aggiungiRiga(riga *r, int y)
     t->y = y;
     strcpy(t->c, "");
     t->id = -1;
+    t->tipo = OS_ERR;
     t->solido = false;
     t->next = *r;
     *r = t;

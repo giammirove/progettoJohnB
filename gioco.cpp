@@ -27,7 +27,7 @@ Gioco::Gioco(FILE *read)
     player->setArma(OS_ARMA1, asciiArt);
     map = new Map(W_WIN - 2, H_WIN - 2);
 
-    gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 6, 12, NUM_PIATTAFORME, NUM_NEMICI, asciiArt);
+    gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 6, 4, player->getHeight(), NUM_PIATTAFORME, NUM_NEMICI, asciiArt);
 
     listaObj = new ListaOggetto();
     listaNem = new ListaNemici();
@@ -97,6 +97,8 @@ void Gioco::gestisciGioco(int c, int *prev, int sec, bool *aggiorna)
 
     // Gestisco gli input da tastiera
     elaboraInput(c, prev);
+
+    gestioneCollisioneNemiciEArmi(sec, c);
 }
 
 // PRIVATE
@@ -320,7 +322,7 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO T PREMUTA
         Aggiungo una piattaforma 
     */
-    if (c == 't')
+    if (c == 't' && DEBUG)
     {
         aggiungiOggetto(new Oggetto(player->getX() + player->getWidth() + map->getOffset() + 1, player->getY(), OS_PIATTAFORMA, asciiArt));
     }
@@ -328,7 +330,7 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO R PREMUTA
         Aggiungo un mulino a vento 
     */
-    if (c == 'r')
+    if (c == 'r' && DEBUG)
     {
         aggiungiOggetto(new Oggetto(player->getX() + player->getWidth() + map->getOffset() + 1, player->getY(), OS_WINDMILL, asciiArt));
     }
@@ -336,7 +338,7 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO SPAZIONE PREMUTA
         Elimino un elemento alla mia destra
     */
-    if (c == ' ')
+    if (c == ' ' && DEBUG)
     {
         int id = map->controllaCollisionePiattaforme(player->getFigura(), 1, 0);
         if (id != -1)
@@ -349,7 +351,7 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO K PREMUTA
         Aggiungo un oggetto casuale 
     */
-    if (c == 'k')
+    if (c == 'k' && DEBUG)
     {
         Oggetto *tmp = gestoreMondo->generaOggetto();
         aggiungiOggetto(tmp);
@@ -358,7 +360,7 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO P PREMUTA
         Mi trasformo in un rinoceronte
     */
-    if (c == 'p')
+    if (c == 'p' && DEBUG)
     {
         player->setFigura(asciiArt->getFigura("RINO"));
     }
@@ -366,7 +368,7 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO O PREMUTA
         Aggiungo un pipistrello 
     */
-    if (c == 'o')
+    if (c == 'o' && DEBUG)
     {
         player->setFigura(asciiArt->getFigura("BAT"));
     }
@@ -374,11 +376,11 @@ void Gioco::elaboraInput(int c, int *prev)
         EVENTO I PREMUTA
         Aggiungo una rana 
     */
-    if (c == 'i')
+    if (c == 'i' && DEBUG)
     {
         player->setFigura(asciiArt->getFigura("FROG"));
     }
-    if (c == 'd')
+    if (c == 'd' && DEBUG)
     {
         listaNemico lista = listaNem->getListaNemico();
         if (map->nemicoDentroMargine(lista->nem->getFigura()))
@@ -388,7 +390,7 @@ void Gioco::elaboraInput(int c, int *prev)
             map->aggiungiOggetto((lista->nem));
         }
     }
-    if (c == 'c')
+    if (c == 'c' && DEBUG)
     {
         player->cambiaArmaAttiva(5);
     }
@@ -399,90 +401,93 @@ void Gioco::elaboraInput(int c, int *prev)
 /*
     Gestisci la collisione del player con i nemici e con le armi
 */
-void Gioco::gestioneCollisioneNemiciEArmi()
+void Gioco::gestioneCollisioneNemiciEArmi(int sec, int c)
 {
-    if (player->getArmaAttiva())
+    if (c != -1 || sec % NEMICI_CLOCK == 0)
     {
-        int id_coll = map->controllaCollisione(player->getArma()->getFigura());
+        if (player->getArmaAttiva())
+        {
+            int id_coll = map->controllaCollisione(player->getArma()->getFigura());
+            if (id_coll != -1)
+            {
+                Nemico *nem = listaNem->getDaId(id_coll);
+                if (nem != NULL)
+                {
+                    // Elimina il nemico
+                    rimuoviNemicoDaId(id_coll);
+                    // Droppa bonus
+                    aggiungiBonus(nem);
+                    // Dai i punti al player
+                    player->incrementaScore(nem->getScore());
+                }
+            }
+            player->decrementaArmaAttiva();
+        }
+
+        int id_coll = map->controllaBordiCollisione(player->getFigura());
         if (id_coll != -1)
         {
             Nemico *nem = listaNem->getDaId(id_coll);
             if (nem != NULL)
             {
-                // Elimina il nemico
-                rimuoviNemicoDaId(id_coll);
-                // Droppa bonus
-                aggiungiBonus(nem);
-                // Dai i punti al player
-                player->incrementaScore(nem->getScore());
-            }
-        }
-        player->decrementaArmaAttiva();
-    }
-
-    int id_coll = map->controllaBordiCollisione(player->getFigura());
-    if (id_coll != -1)
-    {
-        Nemico *nem = listaNem->getDaId(id_coll);
-        if (nem != NULL)
-        {
-            int coll_dw = map->controllaCollisionePiattaforme(player->getFigura(), 0, 1);
-            // se la collisione verso il basso non è con il nemico
-            if (coll_dw != id_coll)
-            {
-                player->decrementaVita(nem->getAttacco());
-                if (nem->getStatico() == false)
+                int coll_dw = map->controllaCollisionePiattaforme(player->getFigura(), 0, 1);
+                // se la collisione verso il basso non è con il nemico
+                if (coll_dw != id_coll)
                 {
-                    // Elimina il nemico
-                    //map->rimuoviOggetto(listaNem->getDaId(id_coll));
-                    //listaObj->rimuoviDaId(id_coll);
-                    //listaNem->rimuoviDaId(id_coll);
+                    player->decrementaVita(nem->getAttacco());
+                    if (nem->getStatico() == false)
+                    {
+                        // Elimina il nemico
+                        //map->rimuoviOggetto(listaNem->getDaId(id_coll));
+                        //listaObj->rimuoviDaId(id_coll);
+                        //listaNem->rimuoviDaId(id_coll);
+                    }
+                }
+                else
+                {
+                    // se collido il nemico verso il basso allora gli sottraggo la vita
+                    if (coll_dw == id_coll)
+                    {
+                        if (nem->getStatico())
+                        {
+                            player->decrementaVita(nem->getAttacco());
+                        }
+                        else
+                        {
+                            nem->decrementaVita();
+
+                            if (nem->getVita() == 0)
+                            {
+
+                                // Elimina il nemico
+                                rimuoviNemicoDaId(id_coll);
+                                // genera un drop al suo posto
+                                aggiungiBonus(nem);
+                                // Dai i punti al player
+                                player->incrementaScore(nem->getScore());
+                            }
+                            if (nem->getInvulnerabile())
+                            {
+                                nem->decrementaInvulnerabile();
+                            }
+                        }
+                        player->salta();
+                    }
                 }
             }
-            else
+
+            Bonus *bonus = listaBonus->getDaId(id_coll);
+            if (bonus != NULL)
             {
-                // se collido il nemico verso il basso allora gli sottraggo la vita
-                if (coll_dw == id_coll)
-                {
-                    if (nem->getStatico())
-                    {
-                        player->decrementaVita(nem->getAttacco());
-                    }
-                    else
-                    {
-                        nem->decrementaVita();
-
-                        if (nem->getVita() == 0)
-                        {
-
-                            // Elimina il nemico
-                            rimuoviNemicoDaId(id_coll);
-                            // genera un drop al suo posto
-                            aggiungiBonus(nem);
-                            // Dai i punti al player
-                            player->incrementaScore(nem->getScore());
-                        }
-                        if (nem->getInvulnerabile())
-                        {
-                            nem->decrementaInvulnerabile();
-                        }
-                    }
-                    player->salta();
-                }
+                rimuoviBonusDaId(id_coll);
+                applicaBonus(bonus);
             }
         }
 
-        Bonus *bonus = listaBonus->getDaId(id_coll);
-        if (bonus != NULL)
+        if (player->getInvulnerabile())
         {
-            rimuoviBonusDaId(id_coll);
-            applicaBonus(bonus);
+            player->decrementaInvulnerabile();
         }
-    }
-
-    if (player->getInvulnerabile())
-    {
-        player->decrementaInvulnerabile();
     }
 }
 
@@ -498,6 +503,7 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
     // Questo controllo permette di temporizzare la gravità
     if (sec % player->getClock() == 0)
     {
+        //mvprintw(0, 40, "QUA %3d", sec);
         // Qui sta continuando il salto
         if (player->stoSaltando())
         {
@@ -754,12 +760,12 @@ void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
 
     if (GestoreMovimento::possoGiu(map, player, listaObj))
     {
-        mvprintw(0, 50, "POSSO GIU %d", c);
+        //mvprintw(0, 50, "POSSO GIU %d", c);
         player->setATerra(false);
     }
     else
     {
-        mvprintw(0, 50, "NON POSSO GIU %d", c);
+        //mvprintw(0, 50, "NON POSSO GIU %d", c);
         player->setATerra(true);
     }
 }
@@ -771,7 +777,6 @@ void Gioco::gestioneNemici(int sec, bool *aggiorna)
 {
     if (sec % NEMICI_CLOCK == 0)
     {
-        gestioneCollisioneNemiciEArmi();
         listaNemico lista = listaNem->getListaNemico();
         while (lista != NULL)
         {

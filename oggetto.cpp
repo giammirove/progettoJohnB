@@ -187,6 +187,11 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _clock = 100000;
         _solido = false;
         break;
+    case OS_ERR:
+        aggiungiPuntoAFigura(&_figura, _x, _y, "?");
+        _clock = 100000;
+        _solido = true;
+        break;
     default:
         aggiungiPuntoAFigura(&_figura, _x, _y, "?");
         _clock = 100000;

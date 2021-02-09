@@ -35,6 +35,7 @@ struct riga_t
     int y;
     char c[30];
     int id;
+    TipoDiOggetto tipo;
     bool solido;
     riga_t *next;
 };
@@ -67,7 +68,7 @@ public:
     int getOffset();
 
     void setPunto(const char c[], int x, int y);
-    void setPunto(const char c[], int x, int y, int id, bool solido);
+    void setPunto(const char c[], int x, int y, int id, bool solido, TipoDiOggetto tipo);
     char *getPunto(int x, int y);
     bool getSolidoPunto(int x, int y);
 

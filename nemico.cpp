@@ -7,7 +7,7 @@ Nemico::Nemico(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 	: Oggetto(x, y, tipo, asciiArt)
 {
 	_direction = true;
-	_MAX_INVULNERABILE = 0;
+	_MAX_INVULNERABILE = 0;	
 	impostaFigura(tipo, asciiArt);
 }
 

@@ -21,16 +21,18 @@ using namespace std;
 
 const int SCREEN_CLOCK = 100000;
 const int INPUT_CLOCK = 20000;
-const int NEMICI_CLOCK = 1000;
+const int NEMICI_CLOCK = 100;
 const int MAX_CLOCK_NEMICI = 2000;
+const int MAX_CLOCK = 60000;
 
-const int IDLE_TIME = 5000;
-const int MAX_SEC = 2000;
+const int IDLE_TIME = 20000;
+const int MAX_SEC = 200000;
 
-const int NUM_PIATTAFORME = 10;
-const int NUM_NEMICI = 10;
+const int NUM_PIATTAFORME = 2;
+const int NUM_NEMICI = 4;
+const int NUM_BONUS = 3;
 
-int H_WIN = 24;
+int H_WIN = 27;
 int W_WIN = 60;
 
 const int MOV_LATERALE_IN_ARIA = 2;
@@ -45,7 +47,8 @@ void disegnaScoreEVita(WINDOW *win, Player *player)
         mvwprintw(win, 1, i + 1, "♥");
     }
     mvwprintw(win, 2, 1, "Score %d", player->getScore());
-    if(player->getArmaAttiva()) {
+    if (player->getArmaAttiva())
+    {
         mvwprintw(win, 1, W_WIN - 12, "ARMA %3d", player->getValoreArma());
     }
 }
@@ -65,7 +68,8 @@ void disegnaMappa(WINDOW *win, Map *map)
     {
         riga r = m->r;
         while (r != NULL)
-        {
+        {      
+            // NEMICO
             mvwprintw(win, r->y + 1, m->x - map->getOffset() + 1, r->c);
             r = r->next;
         }
@@ -81,13 +85,15 @@ void disegnaMappa(WINDOW *win, Map *map)
 void disegnaPlayer(WINDOW *win, Player player)
 {
     figura fig = player.getFigura();
-    if(player.getInvulnerabile() && player.getValoreInvulnerabile() % 2 == 0) wattron(win, COLOR_PAIR(1));
+    if (player.getInvulnerabile() && player.getValoreInvulnerabile() % 2 == 0)
+        wattron(win, COLOR_PAIR(1));
     while (fig != NULL)
-    {   
+    {
         mvwprintw(win, fig->y + 1, fig->x + 1, fig->c);
         fig = fig->next;
     }
-    if(player.getInvulnerabile() && player.getValoreInvulnerabile() % 2 == 0) wattroff(win, COLOR_PAIR(1));
+    if (player.getInvulnerabile() && player.getValoreInvulnerabile() % 2 == 0)
+        wattroff(win, COLOR_PAIR(1));
     if (player.getArmaAttiva())
     {
         figura arma = player.getArma()->getFigura();
@@ -143,7 +149,7 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
 /*
     Schermata di perdita
 */
-void schermataDiPerdita(WINDOW *win)
+void schermataDiPerdita(WINDOW *win, Gioco *gioco)
 {
     // aspetta qualche istante
     usleep(150000);
@@ -152,7 +158,15 @@ void schermataDiPerdita(WINDOW *win)
     werase(win);
     // Ridisegno i bordi
     wborder(win, 0, 0, 0, 0, 0, 0, 0, 0);
-    mvwprintw(win, (H_WIN / 2), (W_WIN / 2) - 5, "HAI PERSO!");
+
+    // Disegno il teschio
+    figura teschio = gioco->getAsciiArt()->getFigura("DEATH");
+    while (teschio != NULL)
+    {
+        mvwprintw(win, teschio->y+1, teschio->x+8, teschio->c);
+        teschio = teschio->next;
+        //mvwprintw(win, (H_WIN / 2), (W_WIN / 2) - 5, "HAI PERSO!");
+    }
 
     // Aggiorno per apportare le modifiche
     wrefresh(win);
@@ -199,9 +213,14 @@ int main()
     int c = -1;
     int prev = -1;
     int idle = IDLE_TIME;
+    int start = clock();
+    int current_clock = start;
 
     while (true && gioco->getPlayer()->getVita() > 0)
     {
+        // 1 / 10 di secondo
+        current_clock = ((clock() - start)/(CLOCKS_PER_SEC/1000));
+
         if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
         {
             gioco->getPlayer()->muori();
@@ -221,7 +240,7 @@ int main()
             idle = IDLE_TIME;
         }
 
-        gioco->gestisciGioco(c, &prev, sec, &aggiorna);
+        gioco->gestisciGioco(c, &prev, current_clock, &aggiorna);
 
         if (c != -1)
         {
@@ -237,8 +256,11 @@ int main()
         if (aggiorna)
         {
             aggiornaSchermo(win, debug, gioco->getMap(), gioco->getPlayer());
-        }
+        }   
 
+        //mvprintw(0,0, "TIME : %3d - %3d", current_clock, sec);
+
+        /*
         werase(debug);
         box(debug, 0, 0);
         mvwprintw(debug, 1, 1, "SEC : %d", sec);
@@ -256,6 +278,7 @@ int main()
         mvwprintw(debug, 13, 1, "INV : %4d", gioco->getPlayer()->getInvulnerabile());
         mvwprintw(debug, 14, 1, "NEM : %d", nemClock);
         wrefresh(debug);
+        */
         sec++;
         if (idle > 0)
             idle--;
@@ -265,9 +288,13 @@ int main()
         }
         if (sec >= MAX_SEC)
             sec = 0;
+        if(current_clock >= MAX_CLOCK) {
+            start = clock();
+            current_clock = start;
+        }
     }
 
-    schermataDiPerdita(win);
+    schermataDiPerdita(win, gioco);
 
     while (true)
         ;

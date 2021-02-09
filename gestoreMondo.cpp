@@ -19,6 +19,7 @@ GestoreMondo::GestoreMondo(ConvertiAsciiArt *asciiArt)
     _max_h = 10;
     _min_h = 2;
     _saltoPlayer = 5;
+    _altezzaPlayer = 3;
     _numeroPiattaforme = 2;
     _lastXPavimento = 0;
 }
@@ -32,13 +33,14 @@ GestoreMondo::GestoreMondo(ConvertiAsciiArt *asciiArt)
     saltoPlayer = _saltoPlayer ovvero quanto salta il player (il calcolo approssimativo è dato da Player.getSaltaHeight() / 2 + 1)
     asciiArt = classe che permette di ottenere la figure in base al nome
 */
-GestoreMondo::GestoreMondo(int _w, int map_h, int max_h, int min_h, int saltoPlayer, int numeroPiattaforme, int numeroNemici, ConvertiAsciiArt *asciiArt)
+GestoreMondo::GestoreMondo(int _w, int map_h, int max_h, int min_h, int saltoPlayer, int altezzaPlayer, int numeroPiattaforme, int numeroNemici, ConvertiAsciiArt *asciiArt)
 {
     _width = _w;
     _map_h = map_h;
     _max_h = max_h;
     _min_h = min_h;
     _saltoPlayer = saltoPlayer;
+    _altezzaPlayer = altezzaPlayer;
     _asciiArt = asciiArt;
     _numeroPiattaforme = numeroPiattaforme;
     _numeroNemici = numeroNemici;
@@ -56,7 +58,7 @@ Oggetto *GestoreMondo::generaOggetto()
     // i primi n oggetti dell'enum saranno usato per
     // questa funzione
     // in questa caso n è uguale 2
-    int rnd = rand() % 2;
+    int rnd = rand() % _numeroPiattaforme;
     int start_x = 0;
     if (_oggettoPrec != NULL)
         start_x = _oggettoPrec->getFigura()->x;
@@ -70,7 +72,7 @@ Oggetto *GestoreMondo::generaOggetto()
     int rnd_y = -1;
     // verifica che la y abbastanza grande da permettere al player di saltare
     // e sia abbastanza piccola da non andare oltre le dimensioni della mappa
-    while (rnd_y < _saltoPlayer || rnd_y > _map_h - _min_h)
+    while (rnd_y < _saltoPlayer + _altezzaPlayer || rnd_y > _map_h - _min_h)
     {
         if (_oggettoPrec != NULL)
             // la nuova y si trova l'intervallo [y precedente - saltoPlayer, (y precedente - saltoPlayer) + 2 * saltoPlayer]
@@ -82,7 +84,7 @@ Oggetto *GestoreMondo::generaOggetto()
     Oggetto *tmp = new Oggetto(rnd_x, rnd_y, (TipoDiOggetto)rnd, _asciiArt);
     _oggettoPrec = tmp;
 
-    mvprintw(0, 0, "%d - (%d < %d < %d)", rnd_x, (_saltoPlayer), rnd_y, _map_h - _min_h);
+    //mvprintw(0, 0, "%d - (%d < %d < %d)", rnd_x, (_saltoPlayer), rnd_y, _map_h - _min_h);
 
     return tmp;
 }

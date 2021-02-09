@@ -30,7 +30,7 @@ Player::Player(int x, int y, int view, int saltaHeight)
     _vita = 3;
     _armaAttiva = false;
     _invulnerabile = 0;
-    _MAX_INVULNERABILE = 3;
+    _MAX_INVULNERABILE = 1000;
     resettaSalto();
 }
 
@@ -43,7 +43,7 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _x = x;
     _y = y;
     _view = view;
-    _clock = 500;
+    _clock = 100;
     _gravita = true;
     _aterra = true;
     _saltaHeight = saltaHeight;
@@ -51,7 +51,7 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _vita = 3;
     _armaAttiva = false;
     _invulnerabile = 0;
-    _MAX_INVULNERABILE = 10;
+    _MAX_INVULNERABILE = 20;
     resettaSalto();
 
     setFigura(fig);
@@ -609,10 +609,10 @@ void Player::aggiornaFigura(int inc_x, int inc_y)
             _arma->muoviFigura(-(_width * 2), 0);
         else
             _arma->muoviFigura((_width * 2), 0);
-        mvprintw(3, 100, "WIDTH %d", _width);
+        //mvprintw(3, 100, "WIDTH %d", _width);
     }
     _arma->muoviFigura(inc_x, inc_y);
-    mvprintw(2, 100, "%d", _arma->getFigura()->x);
+    //mvprintw(2, 100, "%d", _arma->getFigura()->x);
 }
 
 /*
