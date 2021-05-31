@@ -19,7 +19,7 @@
 
 // PUBLIC
 
-Gioco::Gioco(FILE *read)
+Gioco::Gioco(FILE *read, int H_WIN, int W_WIN)
 {
     asciiArt = new ConvertiAsciiArt(read);
 
@@ -32,6 +32,9 @@ Gioco::Gioco(FILE *read)
     listaObj = new ListaOggetto();
     listaNem = new ListaNemici();
     listaBonus = new ListaBonus();
+
+    this->H_WIN = H_WIN;
+    this->W_WIN = W_WIN;
 
     // Genera di default prima 15 stutture
     aggiungiBloccoAlMondo();
@@ -75,6 +78,55 @@ Map *Gioco::getMap()
 ListaOggetto *Gioco::getListaObj()
 {
     return listaObj;
+}
+
+int Gioco::getScreenClock()
+{
+    return SCREEN_CLOCK;
+}
+
+int Gioco::getInputClock()
+{
+    return INPUT_CLOCK;
+}
+
+int Gioco::getNemiciClock()
+{
+    return NEMICI_CLOCK;
+}
+
+int Gioco::getMaxClock(){
+    return MAX_CLOCK;
+}
+
+int Gioco::getIdleTime()
+{
+    return IDLE_TIME;
+}
+
+int Gioco::getNumPiattaforme()
+{
+    return NUM_PIATTAFORME;
+}
+
+int Gioco::getNumNemici()
+{
+    return NUM_NEMICI;
+}
+
+int Gioco::getNumBonus()
+{
+    return NUM_BONUS;
+}
+
+int Gioco::getHWIN()
+{
+    return H_WIN;
+}
+
+int Gioco::getWWIN()
+{
+    return W_WIN;
 }
 
 /*

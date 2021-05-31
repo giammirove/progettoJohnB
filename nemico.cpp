@@ -273,7 +273,7 @@ void Nemico::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 	{
 
 	case OS_NEMICO1:
-		_vita = 1;
+		_vita = 3;
 		_attacco = 1;
 		_score = 5;
 		_statico = false;
@@ -293,7 +293,7 @@ void Nemico::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
 		break;
 
 	case OS_RAGNO:
-		_vita = 3;
+		_vita = 1;
 		_attacco = 2;
 		_score = 15;
 		_statico = false;

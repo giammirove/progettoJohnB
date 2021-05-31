@@ -1,4 +1,5 @@
 #include <ncurses.h>
+#include <curses.h>
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
@@ -19,23 +20,8 @@
 
 using namespace std;
 
-const int SCREEN_CLOCK = 100000;
-const int INPUT_CLOCK = 20000;
-const int NEMICI_CLOCK = 100;
-const int MAX_CLOCK_NEMICI = 2000;
-const int MAX_CLOCK = 60000;
-
-const int IDLE_TIME = 20000;
-const int MAX_SEC = 200000;
-
-const int NUM_PIATTAFORME = 2;
-const int NUM_NEMICI = 4;
-const int NUM_BONUS = 3;
-
 int H_WIN = 27;
 int W_WIN = 60;
-
-const int MOV_LATERALE_IN_ARIA = 2;
 
 /*
     Disegna i punti vita del player e score
@@ -110,9 +96,9 @@ void disegnaPlayer(WINDOW *win, Player player)
 */
 void disegnaLava(WINDOW *win)
 {
-    for (int i = 0; i < W_WIN; i++)
+    for (int i = 1; i < W_WIN-1; i++)
     {
-        mvwaddch(win, H_WIN - 1, i, '~' | COLOR_PAIR(1));
+        mvwaddch(win, H_WIN - 2, i, '~' | COLOR_PAIR(1));
     }
 }
 
@@ -127,7 +113,7 @@ void aggiornaSchermo(WINDOW *win, WINDOW *debug, Map *map, Player *player)
 
     // Ridisegno i bordi
     wborder(win, 0, 0, 0, 0, 0, 0, 0, 0);
-    box(debug, 0, 0);
+    //box(debug, 0, 0);
     // Disegno la mappa nella finestra win
     disegnaMappa(win, map);
 
@@ -201,18 +187,16 @@ int main()
     WINDOW *debug = newwin(15, 15, 1, W_WIN + 5);
 
     FILE *read = fopen("asciiArtDB.txt", "r");
-    Gioco *gioco = new Gioco(read);
+    Gioco *gioco = new Gioco(read, H_WIN, W_WIN);
 
 #pragma endregion
 
     box(debug, 0, 0);
 
-    int sec = 0;
-    int nemClock = 0;
     bool aggiorna = false;
     int c = -1;
     int prev = -1;
-    int idle = IDLE_TIME;
+    int idle = gioco->getIdleTime();
     int start = clock();
     int current_clock = start;
 
@@ -232,12 +216,12 @@ int main()
 
         if (c == 10)
         {
-            break;
+            //break;
         }
 
         if (c != prev)
         {
-            idle = IDLE_TIME;
+            idle = gioco->getIdleTime();
         }
 
         gioco->gestisciGioco(c, &prev, current_clock, &aggiorna);
@@ -279,16 +263,14 @@ int main()
         mvwprintw(debug, 14, 1, "NEM : %d", nemClock);
         wrefresh(debug);
         */
-        sec++;
+
         if (idle > 0)
             idle--;
-        if (sec % INPUT_CLOCK == 0)
+        if (current_clock % gioco->getInputClock() == 0)
         {
             prev = -1;
         }
-        if (sec >= MAX_SEC)
-            sec = 0;
-        if(current_clock >= MAX_CLOCK) {
+        if(current_clock >= gioco->getMaxClock()) {
             start = clock();
             current_clock = start;
         }

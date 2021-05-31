@@ -38,7 +38,7 @@ private:
 
     const int SCREEN_CLOCK = 100000;
     const int INPUT_CLOCK = 20000;
-    const int NEMICI_CLOCK = 100;
+    const int NEMICI_CLOCK = 200;
     const int MAX_CLOCK_NEMICI = 2000;
     const int MAX_CLOCK = 60000;
 
@@ -61,7 +61,7 @@ private:
 #pragma endregion
 
 public:
-    Gioco(FILE *read);
+    Gioco(FILE *read, int H_WIN, int W_WIN);
 
     Player *getPlayer();
     ConvertiAsciiArt *getAsciiArt();
@@ -70,6 +70,17 @@ public:
     ListaOggetto *getListaObj();
     ListaNemici *getListaNem();
     ListaBonus *getListaBonus();
+
+    int getScreenClock();
+    int getInputClock();
+    int getNemiciClock();
+    int getMaxClock();
+    int getIdleTime();
+    int getNumPiattaforme();
+    int getNumNemici();
+    int getNumBonus();
+    int getHWIN();
+    int getWWIN();
 
     void gestisciGioco(int c, int *prev, int sec, bool *aggiorna);
 

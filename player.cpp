@@ -51,7 +51,7 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _vita = 3;
     _armaAttiva = false;
     _invulnerabile = 0;
-    _MAX_INVULNERABILE = 20;
+    _MAX_INVULNERABILE = 30;
     resettaSalto();
 
     setFigura(fig);

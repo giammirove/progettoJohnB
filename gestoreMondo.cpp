@@ -21,6 +21,7 @@ GestoreMondo::GestoreMondo(ConvertiAsciiArt *asciiArt)
     _saltoPlayer = 5;
     _altezzaPlayer = 3;
     _numeroPiattaforme = 2;
+    _numeroNemici = 4;
     _lastXPavimento = 0;
 }
 
@@ -95,7 +96,7 @@ Oggetto *GestoreMondo::generaOggetto()
 Nemico *GestoreMondo::generaNemico()
 {
 
-    int rnd = randomNumber(_numeroPiattaforme, _numeroPiattaforme + 3);
+    int rnd = randomNumber(_numeroPiattaforme, _numeroPiattaforme + _numeroNemici - 1);
     Nemico *tmp = new Nemico(_oggettoPrec->getFigura()->x, _oggettoPrec->getFigura()->y, (TipoDiOggetto)rnd, _asciiArt);
     int rnd_x = randomNumber(-(_oggettoPrec->getWidth()), -(tmp->getWidth()));
     tmp->muoviFigura(rnd_x, -(tmp->getHeight() + 1));
