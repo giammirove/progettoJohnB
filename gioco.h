@@ -36,19 +36,22 @@ private:
 
 #pragma region Constanti
 
-    const int SCREEN_CLOCK = 100000;
-    const int INPUT_CLOCK = 20000;
-    const int NEMICI_CLOCK = 200;
-    const int MAX_CLOCK_NEMICI = 2000;
-    const int MAX_CLOCK = 60000;
+    /*
+        Questi valori sono stati scelti in maniera arbitraria in seguivo a svariati test
+    */
+    const int UN_SECONDO = 70;
+    const int NEMICI_CLOCK = 7;
+    const int MAX_CLOCK_NEMICI = 7;
+    const int MAX_CLOCK = 10000;
 
-    const int IDLE_TIME = 20000;
-    const int MAX_SEC = 200000;
+    const int IDLE_TIME = 30;
+    const int MAX_SEC = 30;
 
     const int NUM_PIATTAFORME = 2;
     const int NUM_NEMICI = 4;
-    const int NUM_BONUS = 3;
+    const int NUM_BONUS = 4;
 
+    // ovvero una possibilita di drop su BONUS_DROP_RATE
     const int BONUS_DROP_RATE = 4;
 
     int H_WIN = 27;

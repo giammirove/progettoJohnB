@@ -40,15 +40,6 @@ int Oggetto::getId()
 }
 
 /*
-    Ottiene il clock di questo oggetto
-    Ogni oggetto ha un clock differente legato al tipo dell'oggetto
-*/
-int Oggetto::getClock()
-{
-    return _clock;
-}
-
-/*
     Ottiene un valore booleano che indica se il tipo di oggetto
     è solido oppure no
     Con solido si intende se il player può attraversare l'oggetto
@@ -101,19 +92,16 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
     case OS_ALBERO:
         aggiungiPuntoAFigura(&_figura, _x, _y, "\U0001F333");
         aggiungiPuntoAFigura(&_figura, _x + 1, _y, " ");
-        _clock = 100000;
         _solido = true;
         break;
     case OS_CESPUGLIO:
         aggiungiPuntoAFigura(&_figura, _x, _y, "o");
         //aggiungiPuntoAFigura(&_figura, _x+1, _y, " ");
-        _clock = 100000;
         _solido = true;
         break;
     case OS_KIRBY:
         aggiungiPuntoAFigura(&_figura, _x, _y, "\U0001F416");
         aggiungiPuntoAFigura(&_figura, _x + 1, _y, " ");
-        _clock = 100000;
         _solido = true;
         break;
     case OS_PIATTAFORMA:
@@ -121,7 +109,6 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         {
             aggiungiPuntoAFigura(&_figura, _x + i, _y, "=");
         }
-        _clock = 100000;
         _solido = false;
         break;
     case OS_PIATTAFORMA2:
@@ -129,7 +116,6 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         {
             aggiungiPuntoAFigura(&_figura, _x + i, _y, "=");
         }
-        _clock = 100000;
         _solido = false;
         break;
     case OS_PAVIMENTO:
@@ -139,62 +125,54 @@ void Oggetto::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         aggiungiPuntoAFigura(&_figura, _x + 3, _y, "-");
         aggiungiPuntoAFigura(&_figura, _x + 4, _y, "-");
         aggiungiPuntoAFigura(&_figura, _x + 5, _y, "-");
-        _clock = 100000;
         _solido = true;
         break;
     case OS_WINDMILL:
         caricaFigura(&_figura, "WINDMILL", asciiArt);
-        _clock = 100000;
         _solido = true;
         break;
     case OS_NEMICO1:
         caricaFigura(&_figura, "NEMICO1", asciiArt);
-        _clock = 100000;
         _solido = false;
         break;
     case OS_NEMICO2:
         caricaFigura(&_figura, "NEMICO2", asciiArt);
-        _clock = 100000;
         _solido = false;
         break;
     case OS_PIATTAFORMA_APPUNTITA:
         caricaFigura(&_figura, "PIATTAFORMA_APPUNTITA", asciiArt);
-        _clock = 100000;
         _solido = true;
         break;
     case OS_RAGNO:
         caricaFigura(&_figura, "RAGNO", asciiArt);
-        _clock = 100000;
         _solido = false;
         break;
     case OS_ARMA1:
         caricaFigura(&_figura, "ARMA1_DX", asciiArt);
-        _clock = 100000;
         _solido = false;
         break;
     case OS_BONUS_VITA:
         aggiungiPuntoAFigura(&_figura, _x, _y, "\U00002764");
-        _clock = 100000;
         _solido = false;
         break;
     case OS_BONUS_ARMA:
         caricaFigura(&_figura, "BONUS_ARMA", asciiArt);
-        _clock = 100000;
         _solido = false;
         break;
     case OS_BONUS_SCORE:
         caricaFigura(&_figura, "BONUS_SCORE", asciiArt);
-        _clock = 100000;
+        _solido = false;
+        break;
+    case OS_BONUS_SALTO:
+        caricaFigura(&_figura, "BONUS_SALTO", asciiArt);
         _solido = false;
         break;
     case OS_ERR:
         aggiungiPuntoAFigura(&_figura, _x, _y, "?");
-        _clock = 100000;
         _solido = true;
         break;
     default:
         aggiungiPuntoAFigura(&_figura, _x, _y, "?");
-        _clock = 100000;
         _solido = true;
         break;
     }

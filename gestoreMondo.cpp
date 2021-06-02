@@ -73,11 +73,12 @@ Oggetto *GestoreMondo::generaOggetto()
     int rnd_y = -1;
     // verifica che la y abbastanza grande da permettere al player di saltare
     // e sia abbastanza piccola da non andare oltre le dimensioni della mappa
-    while (rnd_y < _saltoPlayer + _altezzaPlayer || rnd_y > _map_h - _min_h)
+    // il +2 serve per impedire che il player "sbatta la testa"
+    while (rnd_y < _saltoPlayer + 2*_altezzaPlayer || rnd_y > _map_h - _min_h)
     {
         if (_oggettoPrec != NULL)
             // la nuova y si trova l'intervallo [y precedente - saltoPlayer, (y precedente - saltoPlayer) + 2 * saltoPlayer]
-            rnd_y = randomNumber((_oggettoPrec->getFigura()->y - _saltoPlayer), (_oggettoPrec->getFigura()->y + _saltoPlayer));
+            rnd_y = randomNumber((_oggettoPrec->getFigura()->y - (_saltoPlayer)), (_oggettoPrec->getFigura()->y + (_saltoPlayer)));
         else
             rnd_y = _map_h - _min_h;
     }

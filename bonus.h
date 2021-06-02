@@ -11,6 +11,7 @@ class Bonus : public Oggetto {
         int _bonusVita;
         int _bonusScore;
         int _bonusArma;
+        int _bonusSalto;
         int _probabilita;
 
     public:
@@ -19,7 +20,10 @@ class Bonus : public Oggetto {
         int getBonusVita();
         int getBonusScore();
         int getBonusArma();
+        int getBonusSalto();
         int getProbabilita();
+
+        static int getProbabilita(TipoDiOggetto tipo);
 
         void impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
 };

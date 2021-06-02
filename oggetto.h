@@ -27,6 +27,7 @@ enum TipoDiOggetto
     OS_BONUS_VITA,
     OS_BONUS_SCORE,
     OS_BONUS_ARMA,
+    OS_BONUS_SALTO,
     OS_ARMA1,
     OS_ARMA1_DX,
     OS_ARMA1_SX,
@@ -46,7 +47,6 @@ public:
 
     Oggetto(int x, int y, TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt);
     int getId();
-    int getClock();
     bool getSolido();
     int getWidth();
     int getHeight();
@@ -58,7 +58,6 @@ protected:
     int _x, _y;
     int _width, _height;
     int _myId;
-    int _clock;
     bool _solido;
     figura _figura;
     TipoDiOggetto _tipo;

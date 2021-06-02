@@ -22,12 +22,12 @@ Player::Player(int x, int y, int view, int saltaHeight)
     _x = x;
     _y = y;
     _view = view;
-    _clock = 500;
+    _clock = 75;
     _gravita = true;
     _aterra = true;
     _saltaHeight = saltaHeight;
     _score = 0;
-    _vita = 3;
+    _vita = 5;
     _armaAttiva = false;
     _invulnerabile = 0;
     _MAX_INVULNERABILE = 1000;
@@ -43,12 +43,12 @@ Player::Player(int x, int y, int view, int saltaHeight, figura fig)
     _x = x;
     _y = y;
     _view = view;
-    _clock = 100;
+    _clock = 75;
     _gravita = true;
     _aterra = true;
     _saltaHeight = saltaHeight;
     _score = 0;
-    _vita = 3;
+    _vita = 5;
     _armaAttiva = false;
     _invulnerabile = 0;
     _MAX_INVULNERABILE = 30;
@@ -402,6 +402,49 @@ bool Player::getArmaAttiva()
 }
 
 /*
+    Incrementa gli utilizzi del bonus salto
+*/
+int Player::incrementaBonusSalto(int val) {
+    _bonusSalto += val;
+    return _bonusSalto;
+}
+
+/*
+    Incrementa di 1 gli utilizzi del bonus salto
+*/
+int Player::incrementaBonusSalto() {
+    return incrementaBonusSalto(1);
+}
+
+/*
+    Decrementa gli utilizzi del bonus salto
+*/
+int Player::decrementaBonusSalto(int val) {
+    return incrementaBonusSalto(-val);
+}
+
+/*
+    Decrementa di 1 gli utilizzi del bonus salto
+*/
+int Player::decrementaBonusSalto() {
+    return decrementaBonusSalto(1);
+}
+
+/*
+    Ritorna gli utilizzi del bonus salto
+*/
+int Player::getBonusSalto() {
+    return _bonusSalto;
+}
+
+/*
+    Ritorna se ho ancora utilizzi del bonus salto
+*/
+bool Player::possiedoBonusSalto(){
+    return _bonusSalto > 0;
+}
+
+/*
     Muovo il player a destra di 1
 */
 void Player::vaiADestra()
@@ -445,7 +488,7 @@ void Player::vaiInBasso()
 */
 void Player::salta()
 {
-    _saltaInt = _saltaHeight;
+    _saltaInt += _saltaHeight;
 }
 
 /*

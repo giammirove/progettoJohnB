@@ -31,6 +31,8 @@ _/ \_
 #
 ::BONUS_SCORE
 $
+::BONUS_SALTO
+^
 ::WINDMILL
 __          __
 \\\        ///

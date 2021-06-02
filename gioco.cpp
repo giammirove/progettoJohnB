@@ -2,6 +2,7 @@
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <typeinfo>
 #include "time.h"
 #include <fstream>
@@ -27,7 +28,8 @@ Gioco::Gioco(FILE *read, int H_WIN, int W_WIN)
     player->setArma(OS_ARMA1, asciiArt);
     map = new Map(W_WIN - 2, H_WIN - 2);
 
-    gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 6, 4, player->getHeight(), NUM_PIATTAFORME, NUM_NEMICI, asciiArt);
+    // valori scelti in base a test
+    gestoreMondo = new GestoreMondo(6, map->getHeight(), map->getHeight(), 6, 5, player->getHeight(), NUM_PIATTAFORME, NUM_NEMICI, asciiArt);
 
     listaObj = new ListaOggetto();
     listaNem = new ListaNemici();
@@ -80,22 +82,13 @@ ListaOggetto *Gioco::getListaObj()
     return listaObj;
 }
 
-int Gioco::getScreenClock()
-{
-    return SCREEN_CLOCK;
-}
-
-int Gioco::getInputClock()
-{
-    return INPUT_CLOCK;
-}
-
 int Gioco::getNemiciClock()
 {
     return NEMICI_CLOCK;
 }
 
-int Gioco::getMaxClock(){
+int Gioco::getMaxClock()
+{
     return MAX_CLOCK;
 }
 
@@ -164,36 +157,50 @@ void Gioco::elaboraInput(int c, int *prev)
     /*
         EVENTO FRECCIA IN ALTO PREMUTA
     */
-    if (c == KEY_UP && player->getATerra())
+    if (c == KEY_UP || c == 'v')
     {
-        // Verifico se posso andare verso l'alto
-        if (GestoreMovimento::possoSu(map, player, listaObj))
+        if (player->getATerra())
         {
-            // In caso affermativo salto
-            player->salta();
+            // Verifico se posso andare verso l'alto
+            if (GestoreMovimento::possoSu(map, player, listaObj))
+            {
+                // In caso affermativo salto
+                if (c == 'v')
+                {
+                    if(player->possiedoBonusSalto()) {
+                    player->salta();
+                    player->salta();
+                    player->decrementaBonusSalto();
+                    }
+                }
+                else
+                {
+                    player->salta();
 
-            // Se l'input precedente è stato FRECCIA DESTRA allora effettuo un salto a destra
-            if (*prev == KEY_RIGHT)
-            {
-                player->resettaSaltoDestraSinistra();
-                player->saltaDestra();
-                // cambio la figura del player in posizione di destra
-                player->setFigura(asciiArt->getFigura("PG_DX"));
-            }
-            // Se l'input precedente è stato FRECCIA SINISTRA allora effettuo un salto a sinistra
-            else if (*prev == KEY_LEFT)
-            {
-                player->resettaSaltoDestraSinistra();
-                player->saltaSinistra();
-                // cambio la figura del player in posizione di sinistra
-                player->setFigura(asciiArt->getFigura("PG_SX"));
-            }
-            // Altrimenti effettuo un semplice salto
-            else
-            {
-                // cambio la figura del player in posizione idle
-                player->setFigura(asciiArt->getFigura("PG"));
-                *prev = c;
+                    // Se l'input precedente è stato FRECCIA DESTRA allora effettuo un salto a destra
+                    if (*prev == KEY_RIGHT)
+                    {
+                        player->resettaSaltoDestraSinistra();
+                        player->saltaDestra();
+                        // cambio la figura del player in posizione di destra
+                        player->setFigura(asciiArt->getFigura("PG_DX"));
+                    }
+                    // Se l'input precedente è stato FRECCIA SINISTRA allora effettuo un salto a sinistra
+                    else if (*prev == KEY_LEFT)
+                    {
+                        player->resettaSaltoDestraSinistra();
+                        player->saltaSinistra();
+                        // cambio la figura del player in posizione di sinistra
+                        player->setFigura(asciiArt->getFigura("PG_SX"));
+                    }
+                    // Altrimenti effettuo un semplice salto
+                    else
+                    {
+                        // cambio la figura del player in posizione idle
+                        player->setFigura(asciiArt->getFigura("PG"));
+                        *prev = c;
+                    }
+                }
             }
         }
     }
@@ -455,6 +462,8 @@ void Gioco::elaboraInput(int c, int *prev)
 */
 void Gioco::gestioneCollisioneNemiciEArmi(int sec, int c)
 {
+    if (sec % UN_SECONDO == 0)
+        player->decrementaArmaAttiva();
     if (c != -1 || sec % NEMICI_CLOCK == 0)
     {
         if (player->getArmaAttiva())
@@ -473,7 +482,6 @@ void Gioco::gestioneCollisioneNemiciEArmi(int sec, int c)
                     player->incrementaScore(nem->getScore());
                 }
             }
-            player->decrementaArmaAttiva();
         }
 
         int id_coll = map->controllaBordiCollisione(player->getFigura());
@@ -553,7 +561,7 @@ void Gioco::gestioneCollisioneNemiciEArmi(int sec, int c)
 void Gioco::gestioneGravitaESalto(int sec, int c, int *prev, bool *aggiorna)
 {
     // Questo controllo permette di temporizzare la gravità
-    if (sec % player->getClock() == 0)
+    if (sec % player->getClock() == 0 || true)
     {
         //mvprintw(0, 40, "QUA %3d", sec);
         // Qui sta continuando il salto
@@ -942,7 +950,7 @@ void Gioco::rimuoviOggettoDaId(int id)
 void Gioco::aggiungiBonus(Nemico *nem)
 {
     int drop = randomNumber(0, BONUS_DROP_RATE);
-    if (drop == 0)
+    if (drop == 0 || DEBUG)
     {
 
         int x = nem->getXBonus();
@@ -951,16 +959,13 @@ void Gioco::aggiungiBonus(Nemico *nem)
         while (dropped == false)
         {
             int rnd = NUM_PIATTAFORME + NUM_NEMICI + randomNumber(0, NUM_BONUS - 1);
-            Bonus *tmp = new Bonus(x, y, (TipoDiOggetto)(rnd), asciiArt);
+            TipoDiOggetto tipo = (TipoDiOggetto)(rnd);
             int prob = randomNumber(0, 100);
-            if (prob <= tmp->getProbabilita())
+            if (prob <= Bonus::getProbabilita(tipo))
             {
                 dropped = true;
+                Bonus *tmp = new Bonus(x, y, tipo, asciiArt);
                 aggiungiBonus(tmp);
-            }
-            else
-            {
-                delete tmp;
             }
         }
     }
@@ -994,4 +999,5 @@ void Gioco::applicaBonus(Bonus *bonus)
     player->incrementaVita(bonus->getBonusVita());
     player->incrementaScore(bonus->getBonusScore());
     player->cambiaArmaAttiva(bonus->getBonusArma());
+    player->incrementaBonusSalto(bonus->getBonusSalto());
 }

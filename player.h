@@ -29,6 +29,7 @@ private:
     figura _figura;
     Weapon *_arma;
     int _armaAttiva;
+    int _bonusSalto;
     int _invulnerabile;
 	int _MAX_INVULNERABILE;
 
@@ -77,6 +78,13 @@ public:
     int getValoreArma();
     bool decrementaArmaAttiva();
     bool getArmaAttiva();
+
+    int incrementaBonusSalto(int val);
+    int incrementaBonusSalto();
+    int decrementaBonusSalto(int val);
+    int decrementaBonusSalto();
+    int getBonusSalto();
+    bool possiedoBonusSalto();
 
     void vaiADestra();
     void vaiASinistra();

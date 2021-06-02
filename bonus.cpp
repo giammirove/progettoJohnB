@@ -29,6 +29,13 @@ int Bonus::getBonusArma(){
 }
 
 /*
+    Ritorna il bonus bonus
+*/
+int Bonus::getBonusSalto(){
+    return _bonusSalto;
+}
+
+/*
     Ritorna la probabilità di essere droppato
 */
 int Bonus::getProbabilita(){
@@ -48,25 +55,62 @@ void Bonus::impostaFigura(TipoDiOggetto tipo, ConvertiAsciiArt *asciiArt)
         _bonusVita = 2;
         _bonusScore = 0;
         _bonusArma = 0;
-        _probabilita = 30;
+        _bonusSalto = 0;
+        _probabilita = getProbabilita(tipo);
 		break;
     case OS_BONUS_ARMA:
         _bonusVita = 0;
         _bonusScore = 0;
-        _bonusArma = 40;
-        _probabilita = 10;
+        _bonusArma = 50;
+        _bonusSalto = 0;
+        _probabilita = getProbabilita(tipo);
         break;
     case OS_BONUS_SCORE:
         _bonusVita = 0;
         _bonusScore = 20;
         _bonusArma = 0;
-        _probabilita = 60;
+        _bonusSalto = 0;
+        _probabilita = getProbabilita(tipo);
+        break; 
+    case OS_BONUS_SALTO:
+        _bonusVita = 0;
+        _bonusScore = 0;
+        _bonusArma = 0;
+        _bonusSalto = 1;
+        _probabilita = getProbabilita(tipo);
         break; 
 
 	default:
         _bonusVita = 0;
         _bonusScore = 0;
         _bonusArma = 0;
+        _bonusSalto = 0;
+        _probabilita = getProbabilita(tipo);
 		break;
 	}
+}
+
+int Bonus::getProbabilita(TipoDiOggetto tipo) {
+    int prob = 0;
+    switch (tipo)
+	{
+
+	case OS_BONUS_VITA:
+        prob = 30;
+		break;
+    case OS_BONUS_ARMA:
+        prob = 10;
+        break;
+    case OS_BONUS_SCORE:
+        prob = 40;
+        break; 
+    case OS_BONUS_SALTO:
+        prob = 20;
+        break; 
+
+	default:
+		break;
+	}
+
+    return prob;
 }

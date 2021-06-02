@@ -2,6 +2,7 @@
 #include <curses.h>
 #include <locale.h>
 #include <string.h>
+#include <math.h>
 #include <unistd.h>
 #include <typeinfo>
 #include "time.h"
@@ -23,6 +24,8 @@ using namespace std;
 int H_WIN = 27;
 int W_WIN = 60;
 
+int sec_count = 0;
+
 /*
     Disegna i punti vita del player e score
 */
@@ -36,6 +39,9 @@ void disegnaScoreEVita(WINDOW *win, Player *player)
     if (player->getArmaAttiva())
     {
         mvwprintw(win, 1, W_WIN - 12, "ARMA %3d", player->getValoreArma());
+    }
+    if(player->possiedoBonusSalto()) {
+        mvwprintw(win, 3, 1, "^ x %d", player->getBonusSalto());
     }
 }
 
@@ -54,7 +60,7 @@ void disegnaMappa(WINDOW *win, Map *map)
     {
         riga r = m->r;
         while (r != NULL)
-        {      
+        {
             // NEMICO
             mvwprintw(win, r->y + 1, m->x - map->getOffset() + 1, r->c);
             r = r->next;
@@ -96,7 +102,7 @@ void disegnaPlayer(WINDOW *win, Player player)
 */
 void disegnaLava(WINDOW *win)
 {
-    for (int i = 1; i < W_WIN-1; i++)
+    for (int i = 1; i < W_WIN - 1; i++)
     {
         mvwaddch(win, H_WIN - 2, i, '~' | COLOR_PAIR(1));
     }
@@ -149,7 +155,7 @@ void schermataDiPerdita(WINDOW *win, Gioco *gioco)
     figura teschio = gioco->getAsciiArt()->getFigura("DEATH");
     while (teschio != NULL)
     {
-        mvwprintw(win, teschio->y+1, teschio->x+8, teschio->c);
+        mvwprintw(win, teschio->y + 1, teschio->x + 8, teschio->c);
         teschio = teschio->next;
         //mvwprintw(win, (H_WIN / 2), (W_WIN / 2) - 5, "HAI PERSO!");
     }
@@ -184,7 +190,10 @@ int main()
     nodelay(win, true);
     scrollok(win, TRUE);
     keypad(win, true);
-    WINDOW *debug = newwin(15, 15, 1, W_WIN + 5);
+    WINDOW *debug = newwin(20, 15, 1, W_WIN + 5);
+    nodelay(debug, true);
+    scrollok(debug, TRUE);
+    keypad(debug, true);
 
     FILE *read = fopen("asciiArtDB.txt", "r");
     Gioco *gioco = new Gioco(read, H_WIN, W_WIN);
@@ -200,15 +209,25 @@ int main()
     int start = clock();
     int current_clock = start;
 
+    figura pg_idle = gioco->getAsciiArt()->getFigura("PG");
+    aggiornaSchermo(win, debug, gioco->getMap(), gioco->getPlayer());
+
     while (true && gioco->getPlayer()->getVita() > 0)
     {
+        // 15000 microsecondi sono 0.015 secondi o anche 15 ms
+        // 70 cicli corrispondono indicativamente a 1 secondo
+        usleep(15000);
         // 1 / 10 di secondo
-        current_clock = ((clock() - start)/(CLOCKS_PER_SEC/1000));
+        //current_clock = ((clock()) / (CLOCKS_PER_SEC/1000));
+        current_clock++;
+        //sec_count = round((clock()) / (CLOCKS_PER_SEC/1000) / 1000);
+        if(current_clock % 70 == 0) sec_count++;
+        //sec_count = (clock()) / (CLOCKS_PER_SEC/1000);
 
         if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
         {
-            gioco->getPlayer()->muori();
-            continue;
+            //gioco->getPlayer()->muori();
+            //continue;
         }
 
         aggiorna = false;
@@ -231,23 +250,22 @@ int main()
             aggiorna = true;
         }
 
-        if (idle == 0)
+        if (idle == 0 && gioco->getPlayer()->getFigura() != pg_idle)
         {
-            gioco->getPlayer()->setFigura(gioco->getAsciiArt()->getFigura("PG"));
+            gioco->getPlayer()->setFigura(pg_idle);
             aggiorna = true;
         }
 
         if (aggiorna)
         {
             aggiornaSchermo(win, debug, gioco->getMap(), gioco->getPlayer());
-        }   
+        }
 
         //mvprintw(0,0, "TIME : %3d - %3d", current_clock, sec);
 
-        /*
         werase(debug);
         box(debug, 0, 0);
-        mvwprintw(debug, 1, 1, "SEC : %d", sec);
+        mvwprintw(debug, 1, 1, "SEC : %d", current_clock);
         mvwprintw(debug, 2, 1, "C : %d", c);
         mvwprintw(debug, 3, 1, "P : %d", prev);
         mvwprintw(debug, 4, 1, "I : %d", idle);
@@ -260,19 +278,15 @@ int main()
         mvwprintw(debug, 11, 1, "DIR : %d", gioco->getPlayer()->getArma()->getDirezione());
         mvwprintw(debug, 12, 1, "SIZE : %d", gioco->getListaObj()->getSize());
         mvwprintw(debug, 13, 1, "INV : %4d", gioco->getPlayer()->getInvulnerabile());
-        mvwprintw(debug, 14, 1, "NEM : %d", nemClock);
+        mvwprintw(debug, 14, 1, "S : %4d", sec_count);
+        mvwprintw(debug, 15, 1, "S : %4d", current_clock);
         wrefresh(debug);
-        */
 
         if (idle > 0)
             idle--;
-        if (current_clock % gioco->getInputClock() == 0)
+        if (current_clock >= gioco->getMaxClock())
         {
-            prev = -1;
-        }
-        if(current_clock >= gioco->getMaxClock()) {
-            start = clock();
-            current_clock = start;
+            current_clock = 0;
         }
     }
 
