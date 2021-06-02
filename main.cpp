@@ -22,7 +22,7 @@
 using namespace std;
 
 int H_WIN = 27;
-int W_WIN = 60;
+int W_WIN = 70;
 
 int sec_count = 0;
 
@@ -40,7 +40,8 @@ void disegnaScoreEVita(WINDOW *win, Player *player)
     {
         mvwprintw(win, 1, W_WIN - 12, "ARMA %3d", player->getValoreArma());
     }
-    if(player->possiedoBonusSalto()) {
+    if (player->possiedoBonusSalto())
+    {
         mvwprintw(win, 3, 1, "^ x %d", player->getBonusSalto());
     }
 }
@@ -105,6 +106,36 @@ void disegnaLava(WINDOW *win)
     for (int i = 1; i < W_WIN - 1; i++)
     {
         mvwaddch(win, H_WIN - 2, i, '~' | COLOR_PAIR(1));
+    }
+}
+
+/*
+    Disegna il menu
+*/
+void disegnaMenu(WINDOW *win, Gioco *gioco)
+{
+
+    // Elimino ciò che era presente prima
+    werase(win);
+    // Ridisegno i bordi
+    wborder(win, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    figura montagnola_text = gioco->getAsciiArt()->getFigura("montagnola_text");
+    while (montagnola_text != NULL)
+    {
+        mvwprintw(win, montagnola_text->y + 1, montagnola_text->x + 1, montagnola_text->c);
+        montagnola_text = montagnola_text->next;
+    }
+
+    // Aggiorno per apportare le modifiche
+    wrefresh(win);
+
+    int c = -1;
+
+    while (true)
+    {
+        c = wgetch(win);
+        if(c != -1) break;
     }
 }
 
@@ -200,6 +231,8 @@ int main()
 
 #pragma endregion
 
+    disegnaMenu(win, gioco);
+
     box(debug, 0, 0);
 
     bool aggiorna = false;
@@ -221,7 +254,8 @@ int main()
         //current_clock = ((clock()) / (CLOCKS_PER_SEC/1000));
         current_clock++;
         //sec_count = round((clock()) / (CLOCKS_PER_SEC/1000) / 1000);
-        if(current_clock % 70 == 0) sec_count++;
+        if (current_clock % 70 == 0)
+            sec_count++;
         //sec_count = (clock()) / (CLOCKS_PER_SEC/1000);
 
         if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
