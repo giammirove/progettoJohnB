@@ -39,6 +39,8 @@ int main(int argc, char ** argv){
             default:
                 break;
         }
+        
+        //se highlight è 0 avviare il gioco, se è 1 chiudere
 
     }   
 
