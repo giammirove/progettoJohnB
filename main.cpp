@@ -135,7 +135,8 @@ void disegnaMenu(WINDOW *win, Gioco *gioco)
     while (true)
     {
         c = wgetch(win);
-        if(c != -1) break;
+        if (c != -1)
+            break;
     }
 }
 
@@ -186,7 +187,7 @@ void schermataDiPerdita(WINDOW *win, Gioco *gioco)
     figura teschio = gioco->getAsciiArt()->getFigura("DEATH");
     while (teschio != NULL)
     {
-        mvwprintw(win, teschio->y + 1, teschio->x + 8, teschio->c);
+        mvwprintw(win, teschio->y + 1, teschio->x + 13, teschio->c);
         teschio = teschio->next;
         //mvwprintw(win, (H_WIN / 2), (W_WIN / 2) - 5, "HAI PERSO!");
     }
@@ -258,10 +259,10 @@ int main()
             sec_count++;
         //sec_count = (clock()) / (CLOCKS_PER_SEC/1000);
 
-        if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()))
+        if (gioco->getPlayer()->toccoLaLava(gioco->getMap()->getHeight()) && !gioco->getDebug())
         {
-            //gioco->getPlayer()->muori();
-            //continue;
+            gioco->getPlayer()->muori();
+            continue;
         }
 
         aggiorna = false;
@@ -297,24 +298,27 @@ int main()
 
         //mvprintw(0,0, "TIME : %3d - %3d", current_clock, sec);
 
-        werase(debug);
-        box(debug, 0, 0);
-        mvwprintw(debug, 1, 1, "SEC : %d", current_clock);
-        mvwprintw(debug, 2, 1, "C : %d", c);
-        mvwprintw(debug, 3, 1, "P : %d", prev);
-        mvwprintw(debug, 4, 1, "I : %d", idle);
-        mvwprintw(debug, 5, 1, "X : %d", gioco->getPlayer()->getX() + gioco->getMap()->getOffset());
-        mvwprintw(debug, 6, 1, "Y : %d", gioco->getPlayer()->getY());
-        mvwprintw(debug, 7, 1, "H : %d", gioco->getPlayer()->getSaltaInt());
-        mvwprintw(debug, 8, 1, "TERRA : %d", gioco->getPlayer()->getATerra());
-        mvwprintw(debug, 9, 1, "SCENDO : %d", gioco->getPlayer()->stoScendendo());
-        mvwprintw(debug, 10, 1, "OFFSET : %d", gioco->getMap()->getOffset());
-        mvwprintw(debug, 11, 1, "DIR : %d", gioco->getPlayer()->getArma()->getDirezione());
-        mvwprintw(debug, 12, 1, "SIZE : %d", gioco->getListaObj()->getSize());
-        mvwprintw(debug, 13, 1, "INV : %4d", gioco->getPlayer()->getInvulnerabile());
-        mvwprintw(debug, 14, 1, "S : %4d", sec_count);
-        mvwprintw(debug, 15, 1, "S : %4d", current_clock);
-        wrefresh(debug);
+        if (gioco->getDebug())
+        {
+            werase(debug);
+            box(debug, 0, 0);
+            mvwprintw(debug, 1, 1, "SEC : %d", current_clock);
+            mvwprintw(debug, 2, 1, "C : %d", c);
+            mvwprintw(debug, 3, 1, "P : %d", prev);
+            mvwprintw(debug, 4, 1, "I : %d", idle);
+            mvwprintw(debug, 5, 1, "X : %d", gioco->getPlayer()->getX() + gioco->getMap()->getOffset());
+            mvwprintw(debug, 6, 1, "Y : %d", gioco->getPlayer()->getY());
+            mvwprintw(debug, 7, 1, "H : %d", gioco->getPlayer()->getSaltaInt());
+            mvwprintw(debug, 8, 1, "TERRA : %d", gioco->getPlayer()->getATerra());
+            mvwprintw(debug, 9, 1, "SCENDO : %d", gioco->getPlayer()->stoScendendo());
+            mvwprintw(debug, 10, 1, "OFFSET : %d", gioco->getMap()->getOffset());
+            mvwprintw(debug, 11, 1, "DIR : %d", gioco->getPlayer()->getArma()->getDirezione());
+            mvwprintw(debug, 12, 1, "SIZE : %d", gioco->getListaObj()->getSize());
+            mvwprintw(debug, 13, 1, "INV : %4d", gioco->getPlayer()->getInvulnerabile());
+            mvwprintw(debug, 14, 1, "S : %4d", sec_count);
+            mvwprintw(debug, 15, 1, "S : %4d", current_clock);
+            wrefresh(debug);
+        }
 
         if (idle > 0)
             idle--;

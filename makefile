@@ -1,5 +1,5 @@
-test : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o bonus.o listaBonus.o
-	g++ -o test main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o bonus.o listaBonus.o -lncursesw
+montagnolaPunk2077 : main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o bonus.o listaBonus.o
+	g++ -o montagnolaPunk2077 main.o map.o player.o listaOggetto.o oggetto.o convertiAsciiArt.o utility.o gestoreMovimento.o gestoreMondo.o listaNemici.o nemico.o weapon.o gioco.o bonus.o listaBonus.o -lncursesw
 
 main.o : main.cpp map.h player.h oggetto.h gestoreMovimento.h gestoreMondo.h listaNemici.h nemico.h gioco.h
 	g++ -c main.cpp -lncursesw
@@ -47,4 +47,4 @@ listaBonus.o: listaBonus.cpp listaBonus.h bonus.h oggetto.h
 	g++ -c listaBonus.cpp -lncursesw
 
 clean :
-	rm *.o test
+	rm montagnolaPunk2077 *.o

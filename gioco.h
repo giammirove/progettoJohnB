@@ -84,6 +84,7 @@ public:
     int getNumBonus();
     int getHWIN();
     int getWWIN();
+    bool getDebug();
 
     void gestisciGioco(int c, int *prev, int sec, bool *aggiorna);
 

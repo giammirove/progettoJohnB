@@ -122,6 +122,10 @@ int Gioco::getWWIN()
     return W_WIN;
 }
 
+bool Gioco::getDebug(){
+    return DEBUG;
+}
+
 /*
     Ritorna l'oggetto della lista di nemici
 */
