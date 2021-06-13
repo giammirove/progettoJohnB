@@ -8,7 +8,7 @@
  / >
 ::PG_SX
   o
- VY<
+ VY>
  < \
 ::NEMICO1
  ,,,
