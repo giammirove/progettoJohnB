@@ -20,7 +20,7 @@ MOVIMENTO A DESTRA:
  / >
  MOVIMENTO A SINISTRA:
   o
- VY<
+ VY>
  < \
 
 Il personaggio ha la vita che viene indicata sopra a sinistra con il disegno del cuore "♥". Inizialmente ha tre cuori e può aumentare gli HP (HEALTH POINTS) fino a 10 cuori tramite dei bonus 
@@ -33,28 +33,30 @@ Freccia in su (KEY_UP) - Salto del personaggio
 Freccia destra (KEY_RIGHT) - Movimento a destra del personaggio
 Freccia sinistra (KEY_LEFT) - Movimento a sinistra del personaggio
 Durante il salto si può scegliere la direzione (Destra o sinistra) mentre il personaggio sta in aria.
+V - Se si ha una carica conferita dal bonus "^", si esegue un salto potenziato.
 
 PIATTAFORME:
 Ci sono due tipi di piattaforme:
 PIATTAFORMA NORMALE:
 ========
-Su questa piattaforma il personaggio può saltare e camminare sopra
+Su questa piattaforma il personaggio può saltare e camminare
 PIATTAFORMA APPUNTITA:
 ********
-Se il personaggio salta su questa piattaforma, gli verrà tolto un cuore di vita e il personaggio rimbalza.
+Se il personaggio salta su questa piattaforma, gli verrà tolto un cuore di vita e rimbalzerà.
 
-DIFFICOLTA DEL GIOCO:
-La difficolta del gioco viene aumentata man mano che il personaggio va avanti. Quindi con aumento di difficoltà il pavimento principale viene generato più raramente. Sotto il pavimento c'è il livello della lava dove il personaggio muore subito. 
+DIFFICOLTÀ DEL GIOCO:
+La difficoltà del gioco viene aumentata man mano che il personaggio va avanti. Con l'aumento della difficoltà il pavimento principale viene generato più raramente e compaiono più nemici. Sotto il pavimento c'è della lava che uccide istantaneamente il protagonista. 
 
 NEMICI:
 Nel gioco sono presenti diversi nemici che vengono generati sopra le piattaforme normali. Ci sono tre tipi di nemici:
-NEMICO GUFO:
+
+UOMO GUFO:
  ,,,
 ('v')     HP: 3
 d(0)b     Danno: 1
 _/ \_     Score: 5
 
-NEMICO 2:
+FANTOCCIO ANIMATO:
 
  x        HP: 2
 /@\       Danno: 2
@@ -65,18 +67,22 @@ RAGNO:
 /|o|\     Danno: 2
           Score: 15
 
+    
 BONUS:
-Nel gioco sono presenti tre tipi di bonus:
+Nel gioco sono presenti quattro tipi di bonus:
 BONUS VITA:
-"♥" - aggiunge un cuore (un HP) al personaggio
-      Probabilita' del drop del bonus: 30%
+"♥" - Aggiunge un cuore (un HP) al personaggio
+      Probabilità di drop del bonus: 30%
 BONUS ARMA: 
-"#" - aggiunge la spada al personaggio per un po'
-      Probabilita' del drop del bonus: 10%
+"#" - Aggiunge la spada al personaggio per un po'
+      Probabilità di drop del bonus: 10%
 BONUS SCORE:
-"$" - aggiunge 20 punti al score del personaggio 
-      Probabilita' del drop del bonus: 60%
+"$" - Aggiunge 20 punti al score del personaggio 
+      Probabilità di drop del bonus: 40%
+BONUS SALTO:
+"^" - Permette di eseguire un super salto premendo V
+      Probabilità di drop del bonus: 20%
 
 MORTE DEL PERSONAGGIO:
-Dopo che il personaggio perde tutti i cuori viene visualizzata la death screen.
+Quando il personaggio perde ogni punto vita (o cuore), viene visualizzata la schermata di game over.
 
