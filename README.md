@@ -86,3 +86,12 @@ BONUS SALTO:
 MORTE DEL PERSONAGGIO:
 Quando il personaggio perde ogni punto vita (o cuore), viene visualizzata la schermata di game over.
 
+                                                 
+                                                 
+PRESENTAZIONE
+
+
+
+https://user-images.githubusercontent.com/31212225/165921293-56551273-84fa-4189-ba0e-bc53253a6d1b.mp4
+
+
